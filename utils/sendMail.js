@@ -1,26 +1,32 @@
 const nodemailer = require("nodemailer");
 
-const transporter = nodemailer.createTransport({
-  service: "gmail", // you can change if using other provider
-  auth: {
-    user: process.env.EMAIL_USER, // your email
-    pass: process.env.EMAIL_PASS, // your app password
-  },
-});
+const sendMail = async (to, subject, html, attachmentPath = null) => {
+  const transporter = nodemailer.createTransport({
+    service: "gmail",
+    auth: {
+      user: process.env.EMAIL_USER,
+      pass: process.env.EMAIL_PASS,
+    },
+  });
 
-const sendMail = async (to, subject, html) => {
-  try {
-    await transporter.sendMail({
-      from: process.env.EMAIL_USER,
-      to,
-      subject,
-      html,
-    });
-    console.log(`Mail sent to ${to}`);
-  } catch (error) {
-    console.error("Mail error:", error);
-    throw error;
+  const mailOptions = {
+    from: process.env.EMAIL,
+    to,
+    subject,
+    html,
+  };
+
+  // only add attachments if provided
+  if (attachmentPath) {
+    mailOptions.attachments = [
+      {
+        filename: attachmentPath.split("/").pop(), // file name from path
+        path: attachmentPath,
+      },
+    ];
   }
+
+  await transporter.sendMail(mailOptions);
 };
 
 module.exports = sendMail;

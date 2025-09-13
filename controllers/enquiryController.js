@@ -1,5 +1,10 @@
 const Enquiry = require("../models/Enquiry");
-
+const renderTemplate = require("../utils/templateHandler");
+const sendMail = require("../utils/sendMail");
+const fs = require("fs");
+const path = require("path");
+const PDFDocument = require("pdfkit");
+const renderPdf = require("../utils/pdfTemplates/enquiryPdf");
 // Add new admission enquiry form
 exports.createEnquiry = async (req, res) => {
   try {
@@ -30,7 +35,46 @@ exports.createEnquiry = async (req, res) => {
     }
     const enquiry = new Enquiry(req.body);
     await enquiry.save();
-    res.status(201).json(enquiry);
+
+    // pdf saving for future reference
+    const uploadsDir = path.join(__dirname, "../uploads/enquiries");
+    if (!fs.existsSync(uploadsDir)) {
+      fs.mkdirSync(uploadsDir, { recursive: true });
+    }
+    console.log("Uploads Directory:", uploadsDir);
+
+    const fileName = `enquiry_${enquiry.studentName}.pdf`;
+
+    const filePath = path.join(
+      uploadsDir,
+      fileName
+    );
+
+    const publicPath = `/uploads/enquiries/${fileName}`;
+    const doc = new PDFDocument({ margin: 50 });
+    const writeStream = fs.createWriteStream(filePath);
+
+    doc.pipe(writeStream);
+    renderPdf(doc, { ...req.body, _id: enquiry.studentName }); // call the template
+    doc.end();
+
+    writeStream.on("finish", () => {
+      console.log(`Enquiry PDF saved: ${filePath}`);
+    });
+
+    const html = renderTemplate("enquiry", req.body);
+    await sendMail(
+      req.body.studentEmail,
+      "Your SECE Admission Enquiry",
+      html,
+      filePath
+    );
+
+    res.status(201).json({
+      message: "Enquiry created and email sent with PDF attached",
+      enquiry,
+      pdfUrl: publicPath,
+    });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

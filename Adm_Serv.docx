@@ -1,0 +1,72 @@
+// To create admin user
+POST http://localhost:5000/api/auth/create-admin
+{
+  "name": "Sece Admin",
+  "email": "abishek.k@sece.ac.in",
+  "password": "Admin@123"
+}
+
+// Students to post admission enquiries
+POST http://localhost:5000/api/enquiries
+{
+  "studentName": "Venkatesh",
+  "dob": "1999-03-15",
+  "fatherName": "Kumar",
+  "motherName": "Lakshmi",
+  "isFirstGraduate": true,
+  "gender": "Male",
+  "address": {
+    "doorNo": "12A",
+    "street": "Main Road",
+    "taluk": "Tiruchy",
+    "district": "Trichy",
+    "state": "Tamil Nadu",
+    "pincode": 620001
+  },
+  "community": "BC",
+  "courseRequired": ["B.E CSE", "B.Tech IT"],
+  "twelfthSchoolName": "ABC Higher Secondary School",
+  "twelfthSchoolAddress": "Trichy, TN",
+  "twelfthSchoolBoard": "TN-HSC",
+  "tenthSchoolBoard": "TN-HSC",
+  "tenthMarks": "480/500",
+  "twelfthRegisterNo": "123456",
+  "twelfthMarks": {
+    "maths": 95,
+    "physics": 90,
+    "chemistry": 85,
+    "vocationalIfAny": 0,
+    "total": 570,
+    "cutOff": 190
+  },
+  "studentEmail": "venkateshwaran.c15@gmail.com",
+  "studentMobile": "9876543200",
+  "fatherEmail": "venakt@example.com",
+  "fatherMobile": "9123456700",
+  "motherEmail": "venakt1@example.com",
+  "motherMobile": "9988776605",
+  "dateOfVisit": "2025-09-11",
+  "signature": "base64-or-file-path"
+}
+
+// View all enquiries posted
+GET http://localhost:5000/api/enquiries
+
+// View particular enquiry posted by ID
+GET http://localhost:5000/api/enquiries/68c5216921859c7bee5cde64
+
+// Update status of particular enquiry by ID
+PATCH http://localhost:5000/api/enquiries/68c429572604ce5d75eac449/status
+{
+  "status": "Selected"
+}
+
+// Admin to create login for selected users
+POST http://localhost:5000/api/auth/create-from-enquiries
+
+// Student and Admin login both in same 
+POST http://localhost:5000/api/auth/login
+{
+  "email": "abishekkrishnat@gmail.com",
+  "password": "Sece1506"
+}
