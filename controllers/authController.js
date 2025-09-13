@@ -1,9 +1,12 @@
 const bcrypt = require("bcryptjs");
+
 const User = require("../models/User");
 const Enquiry = require("../models/Enquiry");
+
 const sendMail = require("../utils/sendMail");
 const generateToken = require("../utils/generateToken");
 const renderTemplate = require("../utils/templateHandler");
+
 exports.createUsersFromSelectedEnquiries = async (req, res) => {
   try {
     const enquiries = await Enquiry.find({ status: "Selected" });
@@ -14,17 +17,12 @@ exports.createUsersFromSelectedEnquiries = async (req, res) => {
     const createdUsers = [];
 
     for (const enquiry of enquiries) {
-      // console.log(enquiry);
       const existingUser = await User.findOne({ email: enquiry.studentEmail });
       if (existingUser) continue;
 
       const dob = new Date(enquiry.dob);
-      console.log(dob);
       const day = String(dob.getDate()).padStart(2, "0");
-      console.log(day);
-
       const month = String(dob.getMonth() + 1).padStart(2, "0");
-      console.log(month);
 
       const passwordPlain = `Sece${day}${month}`;
       const hashedPassword = await bcrypt.hash(passwordPlain, 10);
@@ -41,8 +39,10 @@ exports.createUsersFromSelectedEnquiries = async (req, res) => {
 
       enquiry.status = "UserCreated";
       await enquiry.save();
+
       const BASE_URL = process.env.BASE_URL;
       const FRONTEND_URL = process.env.FRONTEND_URL;
+
       const html = renderTemplate("welcome", {
         studentName: enquiry.studentName,
         email: enquiry.studentEmail,
@@ -50,6 +50,7 @@ exports.createUsersFromSelectedEnquiries = async (req, res) => {
         baseUrl: BASE_URL,
         frontendUrl: FRONTEND_URL,
       });
+
       await sendMail(
         enquiry.studentEmail,
         "Your College Admission Portal Login",
