@@ -7,6 +7,10 @@ const UserSchema = new mongoose.Schema(
     password: { type: String, required: true },
     role: { type: String, enum: ["Student", "Admin"], default: "Student" },
     firstTimeLogin: { type: Boolean, default: true },
+    enquiry: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Enquiry",
+    },
   },
   { timestamps: true }
 );

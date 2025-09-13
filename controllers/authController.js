@@ -35,6 +35,7 @@ exports.createUsersFromSelectedEnquiries = async (req, res) => {
         password: hashedPassword,
         role: "Student",
         firstTimeLogin: true,
+        enquiry: enquiry._id,
       });
       await user.save();
 
