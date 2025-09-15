@@ -1,5 +1,5 @@
 const bcrypt = require("bcryptjs");
-
+const crypto = require("crypto");
 const User = require("../models/User");
 const Enquiry = require("../models/Enquiry");
 
@@ -113,5 +113,79 @@ exports.login = async (req, res) => {
     });
   } catch (error) {
     res.status(500).json({ message: "Server error", error });
+  }
+};
+
+exports.forgotPassword = async (req, res) => {
+  try {
+    const { email } = req.body;
+    const user = await User.findOne({ email });
+    if (!user)
+      return res.status(404).json({ message: "User not found for this email" });
+
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+
+    user.resetOtp = otp;
+    user.resetOtpExpiry = Date.now() + 10 * 60 * 1000;
+    await user.save();
+
+    const htmlContent = renderTemplate("forgotPassword", {
+      studentName: user.name,
+      email: user.email,
+      otp,
+      frontendUrl: process.env.FRONTEND_URL,
+    });
+
+    await sendMail(
+      email,
+      "Password Reset OTP - SECE Admission Portal",
+      htmlContent
+    );
+
+    res.json({ message: "Otp sent to mail" });
+  } catch (error) {
+    res.status(500).json({ messgae: error.message });
+  }
+};
+
+exports.resetPassword = async (req, res) => {
+  try {
+    const { email, otp, newPassword } = req.body;
+    const user = await User.findOne({ email });
+    if (!user)
+      return res.status(404).json({ message: "User not found for this email" });
+    if (
+      !user.resetOtp ||
+      user.resetOtp != otp ||
+      user.resetOtpExpiry < Date.now()
+    ) {
+      return res.status(404).json({ message: "Invalid or expired otp" });
+    }
+    const salt = await bcrypt.genSalt(10);
+    user.password = await bcrypt.hash(newPassword, salt);
+    user.resetOtp = undefined;
+    user.resetOtpExpiry = undefined;
+
+    await user.save();
+    res.json({ message: "Password changed sucessfully" });
+  } catch (error) {
+    res.status(500).json({ message: error.mesaage });
+  }
+};
+
+exports.changePassword = async (req, res) => {
+  try {
+    const { email, newPassword } = req.body;
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ message: "User not found for this email" });
+    }
+    const salt = await bcrypt.genSalt(10);
+    user.password = await bcrypt.hash(newPassword, salt);
+
+    await user.save();
+    res.json({ mesaage: "Password changed sucessfully" });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
   }
 };

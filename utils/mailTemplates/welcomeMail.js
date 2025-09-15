@@ -1,4 +1,4 @@
-module.exports = ({ studentName, email, password, baseUrl, frontendUrl }) => `
+module.exports = ({ studentName, email, password, frontendUrl }) => `
   <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; border: 1px solid #e0e0e0; border-radius: 8px; padding: 20px; background-color: #f9f9f9;">
     <div style="text-align: center; margin-bottom: 20px;">
       <img src="https://res.cloudinary.com/dfeplguf8/image/upload/v1757761491/sece-logo_fnwecc.png" alt="College Logo" style="width:120px; margin-bottom: 10px;" />

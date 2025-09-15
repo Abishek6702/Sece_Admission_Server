@@ -1,9 +1,11 @@
 const welcome = require("./mailTemplates/welcomeMail");
 const enquiry = require("./mailTemplates/enquiryMail");
+const forgotPassword = require("./mailTemplates/forgotPassword");
 
 const templates = {
   welcome,
   enquiry,
+  forgotPassword
  
 };
 
