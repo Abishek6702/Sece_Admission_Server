@@ -70,3 +70,24 @@ POST http://localhost:5000/api/auth/login
   "email": "abishekkrishnat@gmail.com",
   "password": "Sece1506"
 }
+
+// Forgot password otp mail
+POST http://localhost:5000/api/auth/forgot-password
+{
+    "email":"abishek.k@sece.ac.in"
+}
+
+// Forgot password otp and new password
+POST http://localhost:5000/api/auth/reset-password
+{
+    "email":"abishek.k@sece.ac.in",
+    "otp":203569,
+    "newPassword":"Admin@12345"
+}
+
+// Change password without otp
+POST http://localhost:5000/api/auth/change-password
+{
+    "email":"abishek.k@sece.ac.in",
+    "newPassword":"Admin@123"
+}
