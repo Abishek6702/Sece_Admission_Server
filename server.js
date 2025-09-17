@@ -12,7 +12,8 @@ const app = express();
 
 const allowedOrigins = [
   "http://localhost:5173", // dev
-  "https://your-frontend-domain.com", // replace with your deployed frontend domain
+  "https://your-frontend-domain.com",
+  "http://10.57.1.69:5173"
 ];
 
 app.use(
