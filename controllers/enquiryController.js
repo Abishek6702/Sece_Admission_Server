@@ -214,9 +214,16 @@ exports.getEnquiryStats = async (req, res) => {
     const totalEnquiries = await Enquiry.countDocuments();
     // consol.log(totalEnquiries);
     // Count by status
-    const selectedEnquiries = await Enquiry.countDocuments({ status: "Selected" });
-    const pendingEnquiries = await Enquiry.countDocuments({ status: "Pending" });
-    const rejectedEnquiries = await Enquiry.countDocuments({ status: "Rejected" });
+    const enquiries = await Enquiry.countDocuments({
+      status: { $in: ["Selected", "UserCreated"] },
+    });
+
+    const pendingEnquiries = await Enquiry.countDocuments({
+      status: "Pending",
+    });
+    const rejectedEnquiries = await Enquiry.countDocuments({
+      status: "Rejected",
+    });
 
     res.json({
       totalEnquiries,
@@ -228,4 +235,3 @@ exports.getEnquiryStats = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
-
