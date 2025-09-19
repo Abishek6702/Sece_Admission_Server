@@ -11,7 +11,7 @@ dotenv.config();
 const app = express();
 
 const allowedOrigins = [
-  "http://localhost:5173", // dev
+  "http://localhost:5173", 
   "https://your-frontend-domain.com",
   "http://10.57.1.69:5173"
 ];
@@ -19,7 +19,6 @@ const allowedOrigins = [
 app.use(
   cors({
     origin: function (origin, callback) {
-      // allow requests with no origin (like Postman)
       if (!origin) return callback(null, true);
       if (allowedOrigins.includes(origin)) {
         callback(null, true);
@@ -27,16 +26,13 @@ app.use(
         callback(new Error("Not allowed by CORS"));
       }
     },
-    methods: ["GET", "POST", "PUT", "DELETE"],
+    methods: ["GET", "POST", "PUT", "DELETE","PATCH"],
     credentials: true,
   })
 );
-// Connection establishmant to mongodb
 connectDB();
 
-// Middleware to parse json
 app.use(express.json());
-// all the app routes
 app.use("/assets", express.static("public/assets"));
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 app.use("/api/enquiries", enquirRoutes);

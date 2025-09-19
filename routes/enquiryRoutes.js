@@ -14,4 +14,6 @@ router.get("/:id",enquiryController.getEnquiryById);
 // Update enquiry status by ID
 router.patch("/:id/status",enquiryController.updateEnquiryStatus);
 
+router.put("/bulk/status",enquiryController.bulkUpdateEnquiryStatus);
+
 module.exports = router;

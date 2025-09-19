@@ -124,3 +124,33 @@ exports.updateEnquiryStatus = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
+// Update bulk ststus
+exports.bulkUpdateEnquiryStatus = async (req, res) => {
+  try {
+    const { ids, status } = req.body;
+
+    // Validate inputs
+    if (!Array.isArray(ids) || ids.length === 0) {
+      return res.status(400).json({ message: "ids must be a non-empty array" });
+    }
+
+    if (!["Pending", "Selected", "Rejected"].includes(status)) {
+      return res.status(400).json({ message: "Invalid status value" });
+    }
+
+    // Update multiple documents at once
+    const result = await Enquiry.updateMany(
+      { _id: { $in: ids } },
+      { $set: { status } }
+    );
+
+    res.json({
+      message: "Status updated successfully",
+      matchedCount: result.matchedCount, // how many matched
+      modifiedCount: result.modifiedCount // how many actually updated
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
