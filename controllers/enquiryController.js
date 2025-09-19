@@ -214,7 +214,7 @@ exports.getEnquiryStats = async (req, res) => {
     const totalEnquiries = await Enquiry.countDocuments();
     // consol.log(totalEnquiries);
     // Count by status
-    const enquiries = await Enquiry.countDocuments({
+    const selectedEnquiries = await Enquiry.countDocuments({
       status: { $in: ["Selected", "UserCreated"] },
     });
 
