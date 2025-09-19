@@ -1,3 +1,4 @@
+const mongoose = require("mongoose");
 const bcrypt = require("bcryptjs");
 const crypto = require("crypto");
 const User = require("../models/User");
@@ -9,17 +10,38 @@ const renderTemplate = require("../utils/templateHandler");
 
 exports.createUsersFromSelectedEnquiries = async (req, res) => {
   try {
-    const enquiries = await Enquiry.find({ status: "Selected" });
+    let { ids } = req.body;
+
+    // If IDs are passed, validate them
+    if (ids && !Array.isArray(ids)) {
+      return res.status(400).json({ message: "ids must be an array" });
+    }
+
+    let enquiries;
+    if (ids && ids.length > 0) {
+    const objectIds = ids.map(id => new mongoose.Types.ObjectId(id));
+
+      // Only process given IDs
+      enquiries = await Enquiry.find({
+        _id: { $in: objectIds },
+        status: "Selected",
+      });
+    } else {
+      // Fallback: process all selected enquiries
+      enquiries = await Enquiry.find({ status: "Selected" });
+    }
 
     if (enquiries.length === 0) {
-      return res.status(404).json({ messgae: "No selected enquiries found" });
+      return res.status(404).json({ message: "No eligible enquiries found" });
     }
+
     const createdUsers = [];
 
     for (const enquiry of enquiries) {
       const existingUser = await User.findOne({ email: enquiry.studentEmail });
       if (existingUser) continue;
 
+      // Password from DOB
       const dob = new Date(enquiry.dob);
       const day = String(dob.getDate()).padStart(2, "0");
       const month = String(dob.getMonth() + 1).padStart(2, "0");
@@ -59,14 +81,15 @@ exports.createUsersFromSelectedEnquiries = async (req, res) => {
 
       createdUsers.push(user);
     }
-    res.status(201).json({
-      messgae: "Users created from selected  enquiries",
+
+    return res.status(201).json({
+      message: "Users created successfully",
       count: createdUsers.length,
       createdUsers,
     });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ messgae: "Server error", error });
+    res.status(500).json({ message: "Server error", error });
   }
 };
 

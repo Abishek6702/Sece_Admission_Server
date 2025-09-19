@@ -1,19 +1,23 @@
-const express = require('express');
-const router =express.Router();
+const express = require("express");
+const router = express.Router();
 const enquiryController = require("../controllers/enquiryController");
 
 // Create new enquiry
-router.post("/",enquiryController.createEnquiry);
+router.post("/", enquiryController.createEnquiry);
 
 // Get all enquiries
-router.get("/",enquiryController.getAllEnquiries);
+router.get("/", enquiryController.getAllEnquiries);
+router.get("/enquiry-card", enquiryController.getEnquiryStats);
 
 // Get enquiry by ID
-router.get("/:id",enquiryController.getEnquiryById);
+router.get("/:id", enquiryController.getEnquiryById);
 
 // Update enquiry status by ID
-router.patch("/:id/status",enquiryController.updateEnquiryStatus);
+router.patch("/:id/status", enquiryController.updateEnquiryStatus);
 
-router.put("/bulk/status",enquiryController.bulkUpdateEnquiryStatus);
+router.put("/bulk/status", enquiryController.bulkUpdateEnquiryStatus);
+
+router.post("/export", enquiryController.exportEnquiries);
+
 
 module.exports = router;

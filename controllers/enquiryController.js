@@ -1,4 +1,5 @@
 const Enquiry = require("../models/Enquiry");
+const ExcelJS = require("exceljs");
 const renderTemplate = require("../utils/templateHandler");
 const sendMail = require("../utils/sendMail");
 const fs = require("fs");
@@ -45,10 +46,7 @@ exports.createEnquiry = async (req, res) => {
 
     const fileName = `enquiry_${enquiry.studentName}.pdf`;
 
-    const filePath = path.join(
-      uploadsDir,
-      fileName
-    );
+    const filePath = path.join(uploadsDir, fileName);
 
     const publicPath = `/uploads/enquiries/${fileName}`;
     const doc = new PDFDocument({ margin: 50 });
@@ -148,9 +146,86 @@ exports.bulkUpdateEnquiryStatus = async (req, res) => {
     res.json({
       message: "Status updated successfully",
       matchedCount: result.matchedCount, // how many matched
-      modifiedCount: result.modifiedCount // how many actually updated
+      modifiedCount: result.modifiedCount, // how many actually updated
     });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
+
+// Export enquiries to Excel
+exports.exportEnquiries = async (req, res) => {
+  try {
+    const { ids } = req.body;
+
+    let enquiries;
+    if (ids && ids.length > 0) {
+      enquiries = await Enquiry.find({ _id: { $in: ids } }).lean();
+    } else {
+      enquiries = await Enquiry.find().lean();
+    }
+
+    if (!enquiries || enquiries.length === 0) {
+      return res.status(404).json({ message: "No enquiries found" });
+    }
+
+    // Create workbook & sheet
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet("Enquiries");
+
+    // Dynamically get all unique keys from the documents
+    const allKeys = new Set();
+    enquiries.forEach((doc) => {
+      Object.keys(doc).forEach((key) => allKeys.add(key));
+    });
+
+    const columns = Array.from(allKeys).map((key) => ({
+      header: key,
+      key,
+      width: 25,
+    }));
+
+    worksheet.columns = columns;
+
+    // Add rows
+    enquiries.forEach((doc) => {
+      worksheet.addRow(doc);
+    });
+
+    // Set response headers
+    res.setHeader(
+      "Content-Type",
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    );
+    res.setHeader("Content-Disposition", "attachment; filename=enquiries.xlsx");
+
+    await workbook.xlsx.write(res);
+    res.end();
+  } catch (error) {
+    console.error("Export error:", error);
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// Enquiry Card Data
+exports.getEnquiryStats = async (req, res) => {
+  try {
+    // Total enquiries
+    const totalEnquiries = await Enquiry.countDocuments();
+    // consol.log(totalEnquiries);
+    // Count by status
+    const selectedEnquiries = await Enquiry.countDocuments({ status: "Selected" });
+    const pendingEnquiries = await Enquiry.countDocuments({ status: "Pending" });
+    const rejectedEnquiries = await Enquiry.countDocuments({ status: "Rejected" });
+
+    res.json({
+      totalEnquiries,
+      selectedEnquiries,
+      pendingEnquiries,
+      rejectedEnquiries,
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
