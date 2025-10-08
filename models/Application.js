@@ -14,7 +14,7 @@ const ParentsSchema = new mongoose.Schema({
   qualification: String,
   workType: {
     type: String,
-    enum: ["Government", "Private", "Business", "Other"],
+    enum: ["Government", "Private", "Business", "Other", "Self-employed"],
   },
   organizationName: String,
   designation: String,
@@ -29,7 +29,7 @@ const RemarkSchema = new mongoose.Schema({
   date: { type: Date, default: Date.now },
 });
 
-const ApplicationSchema = new mongoose.new(
+const ApplicationSchema = new mongoose.Schema(
   {
     userId: {
       type: mongoose.Schema.Types.ObjectId,
@@ -46,7 +46,7 @@ const ApplicationSchema = new mongoose.new(
     preferredCourse: String,
     Quota: {
       type: String,
-      enum: ["Governement Quota", "Management Quota"],
+      enum: ["Government Quota", "Management Quota"],
       default: "Management Quota",
     },
     permanentAddress: AddressSchema,
@@ -121,6 +121,13 @@ const ApplicationSchema = new mongoose.new(
     firstGraduateCertificate: String,
     declarationForm: String,
     physicalFitnessForm: String,
+    applicationPdfUrl: { type: String },
+
+    lastRemarkSnapshot: {
+      type: mongoose.Schema.Types.Mixed,
+      default: {},
+    },
+    lastUpdatedFields: [String],
   },
   { timestamps: true }
 );

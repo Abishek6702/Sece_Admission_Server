@@ -4,6 +4,8 @@ const cors = require("cors");
 const connectDB = require("./config/db");
 const enquirRoutes = require("./routes/enquiryRoutes");
 const authRoutes = require("./routes/authRoutes");
+const applicationRoutes = require("./routes/applicationRoutes");
+
 const fs = require("fs");
 const path = require("path");
 dotenv.config();
@@ -36,8 +38,10 @@ connectDB();
 app.use(express.json());
 app.use("/assets", express.static("public/assets"));
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+
 app.use("/api/enquiries", enquirRoutes);
 app.use("/api/auth", authRoutes);
+app.use("/api/application",applicationRoutes);
 
 const PORT = process.env.PORT;
 

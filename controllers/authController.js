@@ -132,7 +132,7 @@ exports.login = async (req, res) => {
       email: user.email,
       role: user.role,
       firstTimeLogin: user.firstTimeLogin,
-      token: generateToken(user._id, user.role),
+      token: generateToken(user._id, user.role, user.name),
     });
   } catch (error) {
     res.status(500).json({ message: "Server error", error });

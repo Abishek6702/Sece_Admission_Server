@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const { ref } = require("pdfkit");
 
 const UserSchema = new mongoose.Schema(
   {
@@ -11,11 +12,14 @@ const UserSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "Enquiry",
     },
-    resetOtp: {type:String},
-    resetOtpExpiry :{type:Date},
+    application: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Application",
+    },
+    resetOtp: { type: String },
+    resetOtpExpiry: { type: Date },
   },
   { timestamps: true }
 );
 
 module.exports = mongoose.model("User", UserSchema);
- 

@@ -29,6 +29,8 @@ exports.createEnquiry = async (req, res) => {
         { motherMobile },
       ],
     });
+        console.log(existing)
+
     if (existing) {
       return res
         .status(400)
