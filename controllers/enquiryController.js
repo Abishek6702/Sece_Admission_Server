@@ -10,26 +10,27 @@ const renderPdf = require("../utils/pdfTemplates/enquiryPdf");
 exports.createEnquiry = async (req, res) => {
   try {
     const {
-      studentEmail,
+      // studentEmail,
       studentMobile,
-      fatherEmail,
+      // fatherEmail,
       fatherMobile,
-      motherEmail,
+      // motherEmail,
       motherMobile,
     } = req.body;
+    console.log("working");
 
     // Validating to prevent duplicate entries based on email and mobile
     const existing = await Enquiry.findOne({
       $or: [
-        { studentEmail },
+        // { studentEmail },
         { studentMobile },
-        { fatherEmail },
+        // { fatherEmail },
         { fatherMobile },
-        { motherEmail },
+        // { motherEmail },
         { motherMobile },
       ],
     });
-        console.log(existing)
+    console.log(existing);
 
     if (existing) {
       return res
@@ -61,14 +62,16 @@ exports.createEnquiry = async (req, res) => {
     writeStream.on("finish", () => {
       console.log(`Enquiry PDF saved: ${filePath}`);
     });
+    enquiry.enquiryPdfUrl = publicPath;
+    await enquiry.save();
 
-    const html = renderTemplate("enquiry", req.body);
-    await sendMail(
-      req.body.studentEmail,
-      "Your SECE Admission Enquiry",
-      html,
-      filePath
-    );
+    // const html = renderTemplate("enquiry", req.body);
+    // await sendMail(
+    //   req.body.studentEmail,
+    //   "Your SECE Admission Enquiry",
+    //   html,
+    //   filePath
+    // );
 
     res.status(201).json({
       message: "Enquiry created and email sent with PDF attached",
@@ -104,17 +107,40 @@ exports.getEnquiryById = async (req, res) => {
 };
 
 // Update enquiry status
+// Update enquiry status AND other fields
 exports.updateEnquiryStatus = async (req, res) => {
   try {
-    const { status } = req.body;
-    if (!["Pending", "Selected", "Rejected"].includes(status)) {
+    // Destructure fields you want to allow updating
+    const {
+      status,
+      allocatedStaff,
+      amount,
+      feesPaid,
+      hasScholarship,
+      scholarshipType,
+      transactionNo,
+      finalizedCourse,
+    } = req.body;
+
+    // Validate status if provided
+    if (status && !["Pending", "Selected", "Rejected"].includes(status)) {
       return res.status(400).json({ message: "Invalid status value" });
     }
-    const enquiry = await Enquiry.findByIdAndUpdate(
-      req.params.id,
-      { status },
-      { new: true }
-    );
+
+    // Build update object dynamically
+    const update = {};
+    if (status) update.status = status;
+    if (allocatedStaff !== undefined) update.allocatedStaff = allocatedStaff;
+    if (amount !== undefined) update.amount = amount;
+    if (feesPaid !== undefined) update.feesPaid = feesPaid;
+    if (hasScholarship !== undefined) update.hasScholarship = hasScholarship;
+    if (scholarshipType !== undefined) update.scholarshipType = scholarshipType;
+    if (transactionNo !== undefined) update.transactionNo = transactionNo;
+    if (finalizedCourse !== undefined) update.finalizedCourse = finalizedCourse;
+
+    const enquiry = await Enquiry.findByIdAndUpdate(req.params.id, update, {
+      new: true,
+    });
 
     if (!enquiry) {
       return res.status(404).json({ message: "Enquiry not found" });
@@ -235,5 +261,58 @@ exports.getEnquiryStats = async (req, res) => {
     });
   } catch (error) {
     res.status(500).json({ message: error.message });
+  }
+};
+
+exports.addRevisit = async (req, res) => {
+  try {
+    const { date, visitedBy } = req.body;
+
+    const enquiry = await Enquiry.findById(req.params.id);
+    if (!enquiry) {
+      return res.status(404).json({ message: "Enquiry not found" });
+    }
+
+    enquiry.revisits.push({ date, visitedBy });
+
+    if (!enquiry.revisited && enquiry.revisits.length === 1) {
+      enquiry.revisited = true;
+    }
+
+    await enquiry.save();
+
+    res.json({
+      message: "Revisit recorded successfully",
+      revisited: enquiry.revisited,
+      revisits: enquiry.revisits,
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+exports.getRevisitedCount = async (req, res) => {
+  try {
+    const revisitedCount = await Enquiry.countDocuments({ revisited: true });
+    res.json({ revisitedCount });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+exports.getScholarshipCount = async (req, res) => {
+  try {
+    // Count enquiries with and without scholarship
+    const [scholarshipCount, nonScholarshipCount] = await Promise.all([
+      Enquiry.countDocuments({ hasScholarship: true }),
+      Enquiry.countDocuments({ hasScholarship: false }),
+    ]);
+
+    res.status(200).json({
+      scholarshipCount,
+      nonScholarshipCount,
+    });
+  } catch (error) {
+    console.error("Error fetching scholarship counts:", error);
+    res.status(500).json({ message: "Failed to fetch scholarship counts" });
   }
 };

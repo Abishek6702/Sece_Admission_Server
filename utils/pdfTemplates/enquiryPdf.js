@@ -1,140 +1,153 @@
-// utils/pdfTemplates/enquiryPdf.js
-const path = require("path");
-const fs = require("fs");
+const PDFDocument = require('pdfkit');
+const fs = require('fs');
+const path = require('path');
 
 module.exports = (doc, data) => {
-  const {
-    _id,
-    studentName,
-    dob,
-    gender,
-    isFirstGraduate,
-    studentEmail,
-    studentMobile,
+  // === Page setup ===
+  const pageLeft = 45;
+  const pageTop = 50;
+  const pageWidth = 520;
+  const rowHeight = 20; // slightly reduced for better fitting
+  const boxHeight = 680; // reduced to fit 1 page
 
-    fatherName,
-    fatherEmail,
-    fatherMobile,
+  // Outer border (fits single page)
+  doc.rect(pageLeft, pageTop, pageWidth, boxHeight).stroke();
 
-    motherName,
-    motherEmail,
-    motherMobile,
+  // === Header ===
+  doc.fontSize(14)
+    .font('Helvetica-Bold')
+    .text('Sri Eshwar College of Engineering, Coimbatore', pageLeft, pageTop + 10, { width: pageWidth, align: 'center' });
 
-    address = {},
-    community,
-    courseRequired = [],
+  doc.fontSize(12)
+    .font('Helvetica')
+    .text('Admission Enquiry Form (1st year)', pageLeft, pageTop + 30, { width: pageWidth, align: 'center' });
 
-    twelfthSchoolName,
-    twelfthSchoolAddress,
-    twelfthSchoolBoard,
-    twelfthRegisterNo,
+  // === Student Info Section ===
+  doc.fontSize(10).font('Helvetica');
+  let y = pageTop + 55;
 
-    tenthSchoolBoard,
-    twelfthMarks = {},
-
-    dateOfVisit,
-    signature,
-    status,
-    createdAt,
-    updatedAt,
-  } = data;
-
-  // ===== Header =====
-  const logoPath = path.join(__dirname, "../../public/assets/logo.png");
-  if (fs.existsSync(logoPath)) {
-    doc.image(logoPath, 50, 40, { width: 80 });
+  // Helper for clean rows
+  function drawRow(leftLabel, leftValue, rightLabel, rightValue) {
+    doc.text(leftLabel, pageLeft + 5, y + 5);
+    doc.text(leftValue || '', pageLeft + 95, y + 5, { width: 120, ellipsis: true });
+    doc.text(rightLabel, pageLeft + 240, y + 5);
+    doc.text(rightValue || '', pageLeft + 320, y + 5, { width: 120, ellipsis: true });
+    y += rowHeight;
+    doc.moveTo(pageLeft, y).lineTo(pageLeft + pageWidth, y).stroke();
   }
 
-  doc.fillColor("#2c3e50").fontSize(22).text("SECE Admission Enquiry", 150, 50);
-  doc.moveDown(2);
+  // --- Row 1: Student Name, DOB
+  drawRow('Student Name:', data.studentName, 'DOB:', data.dob);
 
-  // Helper for section headings
-  const sectionHeading = (title) => {
-    doc.fillColor("#3498db").fontSize(16).text(title, { underline: true });
-    doc.moveDown(0.5);
-  };
+  // --- Row 2: Gender, Graduate
+  drawRow('Gender:', data.gender, 'Graduate:', data.isFirstGraduate ? 'Yes' : 'No');
 
-  // Helper for key-value pairs
-  const infoRow = (label, value) => {
-    doc.fillColor("#000").fontSize(12).text(`${label}: ${value || "-"}`);
-  };
+  // --- Row 3: Father Name, Mother Name
+  drawRow('Father Name:', data.fatherName, 'Mother Name:', data.motherName);
 
-  // ===== Student Details =====
-  sectionHeading("Student Details");
-  infoRow("Enquiry ID", _id);
-  infoRow("Name", studentName);
-  infoRow("DOB", dob ? new Date(dob).toLocaleDateString() : "-");
-  infoRow("Gender", gender);
-  infoRow("First Graduate", isFirstGraduate ? "Yes" : "No");
-  infoRow("Email", studentEmail);
-  infoRow("Mobile", studentMobile);
-  doc.moveDown();
+  // --- Address row ---
+  doc.text('Address:', pageLeft + 5, y + 5);
+  doc.text(data.address?.doorNo || '', pageLeft + 65, y + 5, { width: pageWidth - 75, ellipsis: true });
+  y += rowHeight;
+  doc.moveTo(pageLeft, y).lineTo(pageLeft + pageWidth, y).stroke();
 
-  // ===== Father Details =====
-  sectionHeading("Father Details");
-  infoRow("Name", fatherName);
-  infoRow("Email", fatherEmail);
-  infoRow("Mobile", fatherMobile);
-  doc.moveDown();
+  // --- Community ---
+  doc.text('Community (OC/BC/MBC/SCA/SC/ST):', pageLeft + 5, y + 5);
+  doc.text(data.community || '', pageLeft + 210, y + 5);
+  y += rowHeight;
+  doc.moveTo(pageLeft, y).lineTo(pageLeft + pageWidth, y).stroke();
 
-  // ===== Mother Details =====
-  sectionHeading("Mother Details");
-  infoRow("Name", motherName);
-  infoRow("Email", motherEmail);
-  infoRow("Mobile", motherMobile);
-  doc.moveDown();
+  // --- Course Required ---
+  doc.text('Course Required:', pageLeft + 5, y + 5);
+  doc.text(data.courseRequired ? data.courseRequired.join(', ') : '', pageLeft + 110, y + 5, { width: pageWidth - 120, ellipsis: true });
+  y += rowHeight;
+  doc.moveTo(pageLeft, y).lineTo(pageLeft + pageWidth, y).stroke();
 
-  // ===== Address =====
-  sectionHeading("Address");
-  infoRow("Door No", address.doorNo);
-  infoRow("Street", address.street);
-  infoRow("Taluk", address.taluk);
-  infoRow("District", address.district);
-  infoRow("State", address.state);
-  infoRow("Pincode", address.pincode);
-  doc.moveDown();
+  // === Academic Details Section ===
+  doc.font('Helvetica-Bold').text('Academic Details:', pageLeft + 5, y + 5);
+  doc.font('Helvetica');
+  y += rowHeight;
+  doc.moveTo(pageLeft, y).lineTo(pageLeft + pageWidth, y).stroke();
 
-  // ===== Community & Course =====
-  sectionHeading("Community & Course Details");
-  infoRow("Community", community);
-  infoRow("Courses Applied", courseRequired.length ? courseRequired.join(", ") : "-");
-  doc.moveDown();
+  // --- 12th School Name ---
+  doc.text('12th School Name:', pageLeft + 5, y + 5);
+  doc.text(data.twelfthSchoolName || '', pageLeft + 115, y + 5, { width: pageWidth - 120, ellipsis: true });
+  y += rowHeight;
+  doc.moveTo(pageLeft, y).lineTo(pageLeft + pageWidth, y).stroke();
 
-  // ===== Academic Details =====
-  sectionHeading("Academic Details");
-  infoRow("10th Board", tenthSchoolBoard);
-  infoRow("12th School Name", twelfthSchoolName);
-  infoRow("12th School Address", twelfthSchoolAddress);
-  infoRow("12th Board", twelfthSchoolBoard);
-  infoRow("12th Register No", twelfthRegisterNo);
-  doc.moveDown(0.5);
+  // --- 12th Board + School Address ---
+  doc.text('12th Board:', pageLeft + 5, y + 5);
+  doc.text(data.twelfthSchoolBoard || '', pageLeft + 70, y + 5, { width: 80, ellipsis: true });
+  doc.text('12th School Address:', pageLeft + 180, y + 5);
+  doc.text(data.twelfthSchoolAddress || '', pageLeft + 300, y + 5, { width: pageWidth - 310, ellipsis: true });
+  y += rowHeight;
+  doc.moveTo(pageLeft, y).lineTo(pageLeft + pageWidth, y).stroke();
 
-  doc.fillColor("#2c3e50").fontSize(14).text("12th Marks", { underline: true });
-  doc.moveDown(0.3);
-  infoRow("Maths", twelfthMarks.maths);
-  infoRow("Physics", twelfthMarks.physics);
-  infoRow("Chemistry", twelfthMarks.chemistry);
-  infoRow("Vocational (if any)", twelfthMarks.vocationalIfAny);
-  infoRow("Total", twelfthMarks.total);
-  infoRow("Cut Off", twelfthMarks.cutOff);
-  doc.moveDown();
+  // === Marks Table (fixed width, well-spaced) ===
+  const colWidths = [150, 120, 120]; // adjusted to fit page neatly
+  const cellXs = [
+    pageLeft,
+    pageLeft + colWidths[0],
+    pageLeft + colWidths[0] + colWidths[1],
+  ];
+  const tableStartY = y + 5;
 
-  // ===== Visit Info =====
-  sectionHeading("Visit Information");
-  infoRow("Date of Visit", dateOfVisit ? new Date(dateOfVisit).toLocaleDateString() : "-");
+  // Table headers
+  doc.font('Helvetica-Bold').fontSize(9);
+  doc.text('Subject', cellXs[0] + 5, tableStartY);
+  doc.text('Marks', cellXs[1] + 5, tableStartY);
+  doc.text('Out Of', cellXs[2] + 5, tableStartY);
 
-  doc.moveDown();
+  doc.font('Helvetica').fontSize(9);
+  const subjects = [
+    ['Maths', data.twelfthMarks?.maths || '', '100'],
+    ['Physics', data.twelfthMarks?.physics || '', '100'],
+    ['Chemistry', data.twelfthMarks?.chemistry || '', '100'],
+    ['Vocational', data.twelfthMarks?.vocational || '', '100'],
+    ['Total', data.twelfthMarks?.total || '', '600'],
+    ['Cut Off', data.twelfthMarks?.cutOff || '', '200'],
+  ];
 
-  // ===== Signature =====
-  sectionHeading("Signature");
-  if (signature && fs.existsSync(signature)) {
-    doc.image(signature, { width: 150 });
-  } else {
-    infoRow("Signature", signature ? "Attached as base64 / file" : "Not Provided");
+  for (let i = 0; i < subjects.length; i++) {
+    const [sub, mark, outof] = subjects[i];
+    const cellY = tableStartY + (i + 1) * rowHeight;
+    doc.text(sub, cellXs[0] + 5, cellY);
+    doc.text(mark, cellXs[1] + 5, cellY);
+    doc.text(`/ ${outof}`, cellXs[2] + 5, cellY);
+    // draw horizontal line
+    doc.moveTo(pageLeft, cellY + rowHeight - 2).lineTo(pageLeft + pageWidth, cellY + rowHeight - 2).stroke();
   }
+  // vertical lines for table
+  for (let i = 1; i < 3; i++) {
+    doc.moveTo(cellXs[i], tableStartY - 2).lineTo(cellXs[i], tableStartY + subjects.length * rowHeight + rowHeight - 2).stroke();
+  }
+  y = tableStartY + subjects.length * rowHeight + rowHeight - 2;
 
-  doc.moveDown(2);
+  // --- 10th Board + Marks row ---
+  doc.text('10th Board:', pageLeft + 5, y + 5);
+  doc.text(data.tenthSchoolBoard || '', pageLeft + 70, y + 5, { width: 80 });
+  doc.text('10th Marks:', pageLeft + 180, y + 5);
+  doc.text(data.tenthMarks || '', pageLeft + 250, y + 5, { width: 100 });
+  y += rowHeight;
+  doc.moveTo(pageLeft, y).lineTo(pageLeft + pageWidth, y).stroke();
 
-  // ===== Footer =====
-  doc.fontSize(10).fillColor("gray").text("Generated by SECE Admission Portal", { align: "center" });
+  // --- Date of Visit + Signature ---
+  doc.text('Date of Visit:', pageLeft + 5, y + 5);
+  doc.text(data.dateOfVisit || '', pageLeft + 85, y + 5);
+  doc.text('Signature:', pageLeft + 180, y + 5);
+  doc.text(data.signature ? 'Attached' : 'Not Provided', pageLeft + 250, y + 5);
+  y += rowHeight;
+  doc.moveTo(pageLeft, y).lineTo(pageLeft + pageWidth, y).stroke();
+
+  // === For Office Use Only ===
+  doc.font('Helvetica-Bold').fontSize(10).text('For Office Use Only:', pageLeft + 5, y + 5);
+  y += rowHeight;
+  doc.font('Helvetica').fontSize(9);
+  doc.text('(CSF / AI-DS / AI-ML / CSE / ECE / EEE / Mech / Cyber Security):', pageLeft + 5, y + 5);
+  y += rowHeight;
+  doc.text('Admitted Department:', pageLeft + 5, y + 5);
+
+  // === Footer ===
+  doc.fontSize(9).fillColor('gray')
+    .text('Generated by SECE Admission Portal', pageLeft, pageTop + boxHeight, { width: pageWidth, align: 'center' });
 };

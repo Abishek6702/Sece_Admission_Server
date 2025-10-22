@@ -5,7 +5,7 @@ const connectDB = require("./config/db");
 const enquirRoutes = require("./routes/enquiryRoutes");
 const authRoutes = require("./routes/authRoutes");
 const applicationRoutes = require("./routes/applicationRoutes");
-
+const schoolRoutes = require("./routes/schoolRoutes.js");
 const fs = require("fs");
 const path = require("path");
 dotenv.config();
@@ -41,7 +41,8 @@ app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 app.use("/api/enquiries", enquirRoutes);
 app.use("/api/auth", authRoutes);
-app.use("/api/application",applicationRoutes);
+app.use("/api/application", applicationRoutes);
+app.use("/api/school",schoolRoutes);
 
 const PORT = process.env.PORT;
 

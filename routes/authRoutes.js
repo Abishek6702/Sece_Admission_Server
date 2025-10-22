@@ -6,6 +6,7 @@ const {
   forgotPassword,
   resetPassword,
   changePassword,
+  createStaff
 } = require("../controllers/authController");
 const { protect, adminOnly } = require("../middlewares/authMiddleware");
 
@@ -24,5 +25,7 @@ router.post("/create-admin", createAdmin);
 router.post("/forgot-password", forgotPassword);
 router.post("/reset-password", resetPassword);
 router.post("/change-password", changePassword);
+router.post("/create-staff", createStaff);
+
 
 module.exports = router;
