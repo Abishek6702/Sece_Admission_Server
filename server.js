@@ -6,6 +6,8 @@ const enquirRoutes = require("./routes/enquiryRoutes");
 const authRoutes = require("./routes/authRoutes");
 const applicationRoutes = require("./routes/applicationRoutes");
 const schoolRoutes = require("./routes/schoolRoutes.js");
+const staffRoutes = require("./routes/staffRoutes.js");
+
 const fs = require("fs");
 const path = require("path");
 dotenv.config();
@@ -43,6 +45,7 @@ app.use("/api/enquiries", enquirRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/application", applicationRoutes);
 app.use("/api/school",schoolRoutes);
+app.use("/api/staff",staffRoutes);
 
 const PORT = process.env.PORT;
 

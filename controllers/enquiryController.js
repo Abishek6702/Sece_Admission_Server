@@ -120,6 +120,7 @@ exports.updateEnquiryStatus = async (req, res) => {
       scholarshipType,
       transactionNo,
       finalizedCourse,
+      allocatedQuota
     } = req.body;
 
     // Validate status if provided
@@ -137,6 +138,7 @@ exports.updateEnquiryStatus = async (req, res) => {
     if (scholarshipType !== undefined) update.scholarshipType = scholarshipType;
     if (transactionNo !== undefined) update.transactionNo = transactionNo;
     if (finalizedCourse !== undefined) update.finalizedCourse = finalizedCourse;
+    if(allocatedQuota!== undefined) update.allocatedQuota=allocatedQuota;
 
     const enquiry = await Enquiry.findByIdAndUpdate(req.params.id, update, {
       new: true,
