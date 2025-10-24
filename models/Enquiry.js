@@ -70,6 +70,7 @@ const EnquirySchema = new mongoose.Schema(
     scholarshipType: { type: String },
     transactionNo: { type: String },
     finalizedCourse: { type: String },
+    rejectRemark:{type:String},
     allocatedQuota: {
       type: String,
       enum: ["Government Quota", "Management Quota"],

@@ -14,7 +14,7 @@ const ParentsSchema = new mongoose.Schema({
   qualification: String,
   workType: {
     type: String,
-    enum: ["Government", "Private", "Business", "Other", "Farmer","HouseWife"],
+    // enum: ["Government", "Private", "Business", "Other", "Farmer","HouseWife"],
   },
   organizationName: String,
   designation: String,
