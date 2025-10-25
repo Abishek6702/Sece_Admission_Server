@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SECE Admission Enquiry Form</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      @page {
+        size: A4;
+        margin: 0;
+      }
+
+      body {
+        font-family: "Times New Roman", serif;
+        background: white;
+        color: #000;
+        padding: 15mm;
+        font-size: 12pt;
+        line-height: 1.3;
+      }
+
+      .form-container {
+        /* border: px solid #000; */
+        padding: 0;
+        background: #f5f5f0;
+        max-width: 210mm;
+        margin: 0 auto;
+      }
+
+      /* Header Section */
+      .header {
+        text-align: center;
+        /* padding: 8px 10px; */
+        background: white;
+        position: relative;
+        padding-bottom: 30px;
+      }
+
+      .header h1 {
+        font-size: 15pt;
+        font-weight: bold;
+        margin-bottom: 2px;
+        color: #333;
+      }
+
+      .header h2 {
+        font-size: 11pt;
+        font-weight: normal;
+        color: #000;
+      }
+
+      .photo-box {
+        position: absolute;
+        right: 15px;
+        top: 8px;
+        width: 80px;
+        height: 90px;
+        border: 1px solid #000;
+        background: white;
+      }
+
+      /* Table Layout */
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        background: #f5f5f0;
+      }
+
+      td {
+        border: 1px solid #000;
+        padding: 5px 8px;
+        font-size: 12pt;
+        vertical-align: top;
+      }
+
+      .label-cell {
+        font-weight: bold;
+        background: #f5f5f0;
+        width: 22%;
+      }
+
+      .value-cell {
+        background: white;
+        width: 28%;
+      }
+
+      .full-width-label {
+        font-weight: bold;
+        background: #f5f5f0;
+        width: 22%;
+      }
+
+      .full-width-value {
+        background: white;
+        width: 78%;
+      }
+
+      .small-label {
+        font-weight: bold;
+        background: #f5f5f0;
+        width: 15%;
+      }
+
+      .small-value {
+        background: white;
+        width: 15%;
+      }
+
+      /* Course section */
+      .course-options {
+        font-size: 12pt;
+        line-height: 2.5;
+        padding: 3px 8px;
+      }
+
+      /* Marks Table */
+      .marks-section {
+        background: rgb(146, 11, 11);
+      }
+
+      .marks-table {
+        width: 100%;
+        /* border-collapse: collapse; */
+      }
+
+      .marks-table td {
+        padding: 4px;
+        text-align: center;
+        font-size: 12pt;
+        /* border: 1px solid #000; */
+      }
+
+      .marks-header {
+        font-weight: bold;
+        background: #f5f5f0;
+      }
+
+      /* Mobile section */
+      .mobile-section td {
+        text-align: center;
+        padding: 8px 4px;
+      }
+
+      .mobile-header {
+        font-weight: bold;
+        background: #f5f5f0;
+      }
+
+      /* Bottom section */
+      .bottom-row {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 10px;
+        /* padding: 20px; */
+        padding-top: 20px;
+        padding-bottom: 20px;
+        padding-left: 20px;
+
+        background: white;
+
+        /* border-top: 1px solid #000; */
+      }
+
+      .date-section,
+      .signature-section {
+        flex: 1;
+      }
+
+      .signature-section {
+        text-align: right;
+      }
+
+      /* Office Use */
+      .office-use {
+        border: 1px solid #000;
+        /* padding: 8px 10px; */
+        background: white;
+        height: 200px;
+      }
+
+      .office-title {
+        text-align: center;
+        font-weight: bold;
+        text-decoration: underline;
+        border-bottom: 2px solid #000;
+        padding-top: 10px;
+        padding-bottom: 10px;
+        margin-bottom: 15px;
+        font-size: 12pt;
+      }
+
+      .office-courses {
+        text-align: center;
+        font-size: 12pt;
+        margin: 15px 0;
+      }
+
+      .admitted-dept {
+        margin-top: 8px;
+        font-weight: bold;
+        font-size: 12pt;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="form-container">
+      <!-- Header -->
+      <div class="header">
+        <h1>Sri Eshwar College of Engineering, Coimbatore</h1>
+        <h2>Admission Enquiry Form (1<sup>st</sup> Year)</h2>
+      </div>
+
+      <!-- Main Form Table -->
+      <table>
+        <!-- Student Name and DOB -->
+        <tr>
+          <td class="label-cell">Student Name:</td>
+          <td class="value-cell"></td>
+          <td class="label-cell">Date of Birth:</td>
+          <td class="value-cell"></td>
+        </tr>
+
+        <!-- Father Name and First Graduate -->
+        <tr>
+          <td class="label-cell">Father Name:</td>
+          <td class="value-cell"></td>
+          <td class="label-cell">1<sup>st</sup> Graduate:</td>
+          <td class="value-cell">Yes / No</td>
+        </tr>
+
+        <!-- Mother Name and Gender -->
+        <tr>
+          <td class="label-cell">Mother Name:</td>
+          <td class="value-cell"></td>
+          <td class="label-cell">Gender:</td>
+          <td class="value-cell">Male/Female</td>
+        </tr>
+
+        <!-- Address -->
+        <tr>
+          <td class="label-cell">
+            Address:<br /><span style="font-size: 8pt; font-style: italic"
+              >(with District and Pin code)</span
+            >
+          </td>
+          <td colspan="3" class="value-cell" style="height: 35px"></td>
+        </tr>
+
+        <!-- Community -->
+        <tr>
+          <td class="label-cell">Community:</td>
+          <td colspan="3" class="value-cell"></td>
+        </tr>
+
+        <!-- Course Required -->
+        <tr>
+          <td class="label-cell">Course Required:</td>
+          <td
+            colspan="3"
+            class="course-options"
+            style="background-color: white"
+          ></td>
+        </tr>
+
+        <!-- +2 School Name -->
+        <tr>
+          <td class="label-cell">+2 School Name:</td>
+          <td colspan="3" class="value-cell"></td>
+        </tr>
+
+        <!-- +2 School Address -->
+        <tr>
+          <td class="label-cell">+2 School Address:</td>
+          <td colspan="3" class="value-cell"></td>
+        </tr>
+
+        <!-- Boards and Register -->
+        <table
+          cellspacing="0"
+          cellpadding="0"
+          style="border: none; width: 100%; text-align: left"
+        >
+          <tr>
+            <td style="width: 22%; font-weight: bold">
+              10<sup>th</sup> Board:
+            </td>
+            <td style="width: 30%">TN-HSC / CBSE / ISC / Others</td>
+            <td style="width: 20%; font-weight: bold">
+              12<sup>th</sup> Board:
+            </td>
+            <td style="width: 30%">TN-HSC / CBSE / ISC / Others</td>
+          </tr>
+
+          <tr>
+            <td style="font-weight: bold">10<sup>th</sup> Mark:</td>
+            <td>/ 500</td>
+            <td style="font-weight: bold">+2 Register Number:</td>
+            <td></td>
+          </tr>
+
+          <!-- +2 Marks Secured Section -->
+          <table
+            cellspacing="0"
+            cellpadding="4"
+            style="border: none; width: 100%; text-align: left; font-size: 10pt"
+          >
+            <tr>
+              <td
+                rowspan="3"
+                style="font-weight: bold; vertical-align: top; width: 22%"
+              >
+                +2 Marks Secured
+              </td>
+              <td style="font-weight: bold; width: 15%">Maths</td>
+              <td style="width: 15%">/ 100</td>
+              <td style="font-weight: bold">Chemistry</td>
+              <td style="width: 28%">/ 100</td>
+            </tr>
+            <tr>
+              <td style="font-weight: bold">Physics</td>
+              <td>/ 100</td>
+              <td style="font-weight: bold">Vocational</td>
+              <td>/ 200</td>
+            </tr>
+            <tr>
+              <td style="font-weight: bold">Cut-Off</td>
+              <td>/ 200</td>
+              <td style="font-weight: bold">Total Marks</td>
+              <td>/ 600</td>
+            </tr>
+          </table>
+        </table>
+      </table>
+
+      <!-- Mobile Number Section -->
+      <table class="mobile-section">
+        <tr>
+          <td colspan="4" class="mobile-header">Mobile Number:</td>
+        </tr>
+        <tr>
+          <td class="mobile-header" style="width: 25%">Student</td>
+          <td class="mobile-header" style="width: 25%">Father</td>
+          <td class="mobile-header" style="width: 25%">Mother</td>
+        </tr>
+        <tr>
+          <td style="width: 25%">+91</td>
+          <td style="width: 25%">+91</td>
+          <td style="width: 25%">+91</td>
+        </tr>
+      </table>
+
+      <!-- Bottom Section -->
+      <div class="bottom-row">
+        <div class="date-section">
+          <strong>Date of Visit:</strong>
+        </div>
+      </div>
+
+      <!-- Office Use Only -->
+      <div class="office-use">
+        <div class="office-title">For Office Use Only:</div>
+        <div class="office-courses">
+          CSE / AI-DS / AI-ML / CCE / CSBS / IT / ECE / EEE / Mech/ Cyber
+          Security
+        </div>
+        <div class="admitted-dept">Admitted Department:</div>
+      </div>
+    </div>
+  </body>
+</html>

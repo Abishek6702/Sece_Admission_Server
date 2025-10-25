@@ -20,6 +20,7 @@ router.post("/export", enquiryController.exportEnquiries);
 router.post("/:id/revisit", enquiryController.addRevisit);
 router.get("/revisited/count", enquiryController.getRevisitedCount);
 router.get("/scholarship/count", enquiryController.getScholarshipCount);
+router.put("/:id", enquiryController.updateEnquiry);
 
 
 

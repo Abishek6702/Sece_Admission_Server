@@ -45,7 +45,7 @@ const EnquirySchema = new mongoose.Schema(
     twelfthSchoolAddress: String,
     twelfthSchoolBoard: String,
     tenthSchoolBoard: String,
-    tenthmarks: String,
+    tenthMarks: String,
     twelfthRegisterNo: String,
     twelfthMarks: {
       maths: Number,

@@ -64,6 +64,14 @@ const ApplicationSchema = new mongoose.Schema(
     selfWhatsapp: String,
     selfEmail: String,
     insuranceNominee: String,
+    fatherPhotoReason: { 
+      type: String, 
+      default: "" 
+    },
+    motherPhotoReason: { 
+      type: String, 
+      default: "" 
+    },
     hostelDayScholar: { type: String, enum: ["Hostel", "DayScholar"] },
     emisNo: String,
     siblingsStudyingHere: { type: Boolean, default: false },

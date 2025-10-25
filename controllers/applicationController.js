@@ -11,6 +11,9 @@ const ExcelJS = require("exceljs");
 const baseUrl = process.env.BASE_URL || "http://localhost:5000";
 const normalizePath = (filePath) => filePath.replace(/\\/g, "/");
 const diffFields = require("../utils/diffFields");
+
+
+
 exports.createApplication = async (req, res) => {
   try {
     const bodyData = req.body;
@@ -88,6 +91,9 @@ exports.createApplication = async (req, res) => {
         );
     }
 
+    bodyData.fatherPhotoReason = bodyData.fatherPhotoReason || "";
+    bodyData.motherPhotoReason = bodyData.motherPhotoReason || "";
+
     // 3️⃣ Create and save application
     const application = new Application(bodyData);
     await application.save();
@@ -134,6 +140,287 @@ exports.createApplication = async (req, res) => {
     });
   }
 };
+
+exports.updateApplication = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const bodyData = req.body;
+
+    // 1️⃣ Find existing application
+    const existingApp = await Application.findById(id);
+    if (!existingApp) {
+      return res.status(404).json({
+        success: false,
+        message: "Application not found",
+      });
+    }
+
+    // 2️⃣ Clean and parse bodyData
+    const updateData = {};
+    
+    const nestedObjectFields = [
+      'permanentAddress',
+      'temporaryAddress',
+      'siblingDetails',
+      'father',
+      'mother',
+      'guardian'
+    ];
+
+    // ✅ Get list of files to delete
+    let filesToDelete = [];
+    if (bodyData.filesToDelete) {
+      try {
+        filesToDelete = JSON.parse(bodyData.filesToDelete);
+        console.log("Files marked for deletion:", filesToDelete);
+      } catch (e) {
+        console.error("Error parsing filesToDelete:", e);
+      }
+    }
+
+    // Parse all incoming data
+    for (const key in bodyData) {
+      if (
+        key === '_id' ||
+        key === '__v' ||
+        key === 'createdAt' ||
+        key === 'updatedAt' ||
+        key === 'applicationPdfUrl' ||
+        key === 'revisionHistory' ||
+        key === 'remarks' ||
+        key === 'userId' ||
+        key === 'filesToDelete' // Skip this field
+      ) {
+        continue;
+      }
+
+      const value = bodyData[key];
+
+      if (nestedObjectFields.includes(key) && typeof value === 'string') {
+        try {
+          const parsed = JSON.parse(value);
+          if (parsed._id) delete parsed._id;
+          updateData[key] = parsed;
+        } catch (e) {
+          console.error(`Error parsing ${key}:`, e);
+          updateData[key] = value;
+        }
+      } else {
+        updateData[key] = value;
+      }
+    }
+
+    if (bodyData.fatherPhotoReason !== undefined) {
+      updateData.fatherPhotoReason = bodyData.fatherPhotoReason;
+    }
+    if (bodyData.motherPhotoReason !== undefined) {
+      updateData.motherPhotoReason = bodyData.motherPhotoReason;
+    }
+
+    // 3️⃣ Handle file deletions
+    filesToDelete.forEach((fieldName) => {
+      if (existingApp[fieldName]) {
+        if (Array.isArray(existingApp[fieldName])) {
+          // Delete all files in array
+          existingApp[fieldName].forEach((filePath) => deleteFile(filePath));
+          updateData[fieldName] = []; // Set to empty array
+        } else {
+          // Delete single file
+          deleteFile(existingApp[fieldName]);
+          updateData[fieldName] = ''; // Set to empty string
+        }
+        console.log(`Deleted field: ${fieldName}`);
+      }
+    });
+
+    // 4️⃣ Map newly uploaded files
+    if (req.files) {
+      if (req.files.studentPhoto) {
+        updateData.studentPhoto = req.files.studentPhoto.map((f) =>
+          normalizePath(f.path)
+        );
+        // Delete old files
+        existingApp.studentPhoto?.forEach((file) => deleteFile(file));
+      }
+     if (req.files.fatherPhoto) {
+        updateData.fatherPhoto = req.files.fatherPhoto.map((f) =>
+          normalizePath(f.path)
+        );
+        existingApp.fatherPhoto?.forEach((file) => deleteFile(file));
+        // ✅ Clear reason when new photo is uploaded
+        updateData.fatherPhotoReason = "";
+      }
+      if (req.files.motherPhoto) {
+        updateData.motherPhoto = req.files.motherPhoto.map((f) =>
+          normalizePath(f.path)
+        );
+        existingApp.motherPhoto?.forEach((file) => deleteFile(file));
+        // ✅ Clear reason when new photo is uploaded
+        updateData.motherPhotoReason = "";
+      }
+      if (req.files.tenthMarkSheet) {
+        updateData.tenthMarkSheet = normalizePath(
+          req.files.tenthMarkSheet[0].path
+        );
+        deleteFile(existingApp.tenthMarkSheet);
+      }
+      if (req.files.eleventhMarkSheet) {
+        updateData.eleventhMarkSheet = normalizePath(
+          req.files.eleventhMarkSheet[0].path
+        );
+        deleteFile(existingApp.eleventhMarkSheet);
+      }
+      if (req.files.twelthMarkSheet) {
+        updateData.twelthMarkSheet = normalizePath(
+          req.files.twelthMarkSheet[0].path
+        );
+        deleteFile(existingApp.twelthMarkSheet);
+      }
+      if (req.files.transferCertificate) {
+        updateData.transferCertificate = normalizePath(
+          req.files.transferCertificate[0].path
+        );
+        deleteFile(existingApp.transferCertificate);
+      }
+      if (req.files.communityCertificate) {
+        updateData.communityCertificate = normalizePath(
+          req.files.communityCertificate[0].path
+        );
+        deleteFile(existingApp.communityCertificate);
+      }
+      if (req.files.incomeCertificate) {
+        updateData.incomeCertificate = normalizePath(
+          req.files.incomeCertificate[0].path
+        );
+        deleteFile(existingApp.incomeCertificate);
+      }
+      if (req.files.migrationCertificate) {
+        updateData.migrationCertificate = normalizePath(
+          req.files.migrationCertificate[0].path
+        );
+        deleteFile(existingApp.migrationCertificate);
+      }
+      if (req.files.aadharCopy) {
+        updateData.aadharCopy = normalizePath(req.files.aadharCopy[0].path);
+        deleteFile(existingApp.aadharCopy);
+      }
+      if (req.files.allotmentOrder) {
+        updateData.allotmentOrder = normalizePath(
+          req.files.allotmentOrder[0].path
+        );
+        deleteFile(existingApp.allotmentOrder);
+      }
+      if (req.files.firstGraduateCertificate) {
+        updateData.firstGraduateCertificate = normalizePath(
+          req.files.firstGraduateCertificate[0].path
+        );
+        deleteFile(existingApp.firstGraduateCertificate);
+      }
+      if (req.files.declarationForm) {
+        updateData.declarationForm = normalizePath(
+          req.files.declarationForm[0].path
+        );
+        deleteFile(existingApp.declarationForm);
+      }
+      if (req.files.physicalFitnessForm) {
+        updateData.physicalFitnessForm = normalizePath(
+          req.files.physicalFitnessForm[0].path
+        );
+        deleteFile(existingApp.physicalFitnessForm);
+      }
+    }
+
+    console.log("Update data being sent to DB:", updateData);
+
+    // 5️⃣ Track changes
+    const changes = diffFields(existingApp.toObject(), updateData);
+    if (changes.length > 0) {
+      updateData.lastModified = new Date();
+      if (!updateData.revisionHistory) {
+        updateData.revisionHistory = existingApp.revisionHistory || [];
+      }
+      updateData.revisionHistory.push({
+        modifiedAt: new Date(),
+        changes: changes,
+        modifiedBy: existingApp.userId,
+      });
+    }
+
+    // 6️⃣ Update application
+    const updatedApplication = await Application.findByIdAndUpdate(
+      id,
+      updateData,
+      { new: true, runValidators: true }
+    );
+
+    if (!updatedApplication) {
+      return res.status(404).json({
+        success: false,
+        message: "Failed to update application",
+      });
+    }
+
+    // 7️⃣ Regenerate PDF and send email
+    const uploadsDir = path.join(__dirname, "../uploads/applicationmails");
+    if (!fs.existsSync(uploadsDir)) {
+      fs.mkdirSync(uploadsDir, { recursive: true });
+    }
+
+    const fileName = `application_${updatedApplication.studentName}_${Date.now()}.pdf`;
+    const filePath = path.join(uploadsDir, fileName);
+    const publicPath = `/uploads/applicationmails/${fileName}`;
+
+    if (existingApp.applicationPdfUrl) {
+      const oldPdfPath = path.join(__dirname, "..", existingApp.applicationPdfUrl);
+      deleteFile(oldPdfPath);
+    }
+
+    updatedApplication.applicationPdfUrl = publicPath;
+    await updatedApplication.save();
+
+    await applicationPdf(updatedApplication, filePath);
+
+    // const html = renderTemplate("application", updatedApplication);
+    // await sendMail(
+    //   updatedApplication.selfEmail,
+    //   "Application Updated - SECE Admission",
+    //   html,
+    //   filePath
+    // );
+
+    res.status(200).json({
+      success: true,
+      message: "Application updated successfully",
+      data: updatedApplication,
+      pdfUrl: publicPath,
+      changes: changes.length,
+    });
+  } catch (error) {
+    console.error("Update error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Error updating application",
+      error: error.message,
+    });
+  }
+};
+
+const deleteFile = (filePath) => {
+  try {
+    if (filePath && fs.existsSync(filePath)) {
+      fs.unlinkSync(filePath);
+      console.log(`✅ Deleted file: ${filePath}`);
+    }
+  } catch (error) {
+    console.error(`❌ Error deleting file ${filePath}:`, error.message);
+  }
+};
+
+
+
+
+
+
 
 // Get all applications
 exports.getAllApplications = async (req, res) => {

@@ -321,3 +321,115 @@ exports.getScholarshipCount = async (req, res) => {
     res.status(500).json({ message: "Failed to fetch scholarship counts" });
   }
 };
+
+// Update enquiry by ID
+exports.updateEnquiry = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const bodyData = req.body;
+
+    // 1️⃣ Find existing enquiry
+    const existingEnquiry = await Enquiry.findById(id);
+    if (!existingEnquiry) {
+      return res.status(404).json({
+        success: false,
+        message: "Enquiry not found",
+      });
+    }
+
+    // 2️⃣ Clean and prepare update data
+    const updateData = {};
+
+    // Fields to exclude from update
+    const excludeFields = [
+      '_id',
+      '__v',
+      'createdAt',
+      'updatedAt',
+      'enquiryPdfUrl'
+    ];
+
+    // Copy all fields except excluded ones
+    for (const key in bodyData) {
+      if (!excludeFields.includes(key)) {
+        updateData[key] = bodyData[key];
+      }
+    }
+
+    console.log("Update data for enquiry:", updateData);
+
+    // 3️⃣ Update enquiry
+    const updatedEnquiry = await Enquiry.findByIdAndUpdate(
+      id,
+      updateData,
+      { new: true, runValidators: true }
+    );
+
+    if (!updatedEnquiry) {
+      return res.status(404).json({
+        success: false,
+        message: "Failed to update enquiry",
+      });
+    }
+
+    // 4️⃣ Regenerate PDF
+    const uploadsDir = path.join(__dirname, "../uploads/enquiries");
+    if (!fs.existsSync(uploadsDir)) {
+      fs.mkdirSync(uploadsDir, { recursive: true });
+    }
+
+    const fileName = `enquiry_${updatedEnquiry.studentName}_${Date.now()}.pdf`;
+    const filePath = path.join(uploadsDir, fileName);
+    const publicPath = `/uploads/enquiries/${fileName}`;
+
+    // Delete old PDF if exists
+    if (existingEnquiry.enquiryPdfUrl) {
+      const oldPdfPath = path.join(
+        __dirname,
+        "..",
+        existingEnquiry.enquiryPdfUrl
+      );
+      if (fs.existsSync(oldPdfPath)) {
+        fs.unlinkSync(oldPdfPath);
+        console.log(`✅ Deleted old PDF: ${oldPdfPath}`);
+      }
+    }
+
+    // Generate new PDF
+    const doc = new PDFDocument({ margin: 50 });
+    const writeStream = fs.createWriteStream(filePath);
+
+    doc.pipe(writeStream);
+    renderPdf(doc, { ...updatedEnquiry.toObject(), _id: updatedEnquiry.studentName });
+    doc.end();
+
+    // Wait for PDF to finish writing
+    await new Promise((resolve, reject) => {
+      writeStream.on("finish", resolve);
+      writeStream.on("error", reject);
+    });
+
+    // Update enquiry with new PDF URL
+    updatedEnquiry.enquiryPdfUrl = publicPath;
+    await updatedEnquiry.save();
+
+    console.log(`✅ New enquiry PDF saved: ${filePath}`);
+
+   
+
+    res.status(200).json({
+      success: true,
+      message: "Enquiry updated successfully and PDF regenerated",
+      data: updatedEnquiry,
+      pdfUrl: publicPath,
+    });
+  } catch (error) {
+    console.error("Update error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Error updating enquiry",
+      error: error.message,
+    });
+  }
+};
+

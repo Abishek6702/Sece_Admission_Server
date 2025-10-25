@@ -11,7 +11,8 @@ const {
   getApplicationStats,
   addRemark,
   resubmitApplication,
-  getApplicationByUserId
+  getApplicationByUserId,
+  updateApplication,
 } = require("../controllers/applicationController");
 
 // Define file fields for upload
@@ -44,5 +45,7 @@ router.post("/export", exportApplications);
 router.post("/:id/remark", addRemark);
 router.put("/:id/resubmit", upload.fields(fileFields), resubmitApplication);
 router.get("/user/:userId", getApplicationByUserId);
+router.put("/:id", upload.fields(fileFields), updateApplication);
+
 
 module.exports = router;
