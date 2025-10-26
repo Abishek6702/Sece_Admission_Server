@@ -156,7 +156,7 @@
       .bottom-row {
         display: flex;
         justify-content: space-between;
-        margin-top: 10px;
+        padding-top: 10px;
         /* padding: 20px; */
         padding-top: 20px;
         padding-bottom: 20px;
@@ -188,7 +188,7 @@
         text-align: center;
         font-weight: bold;
         text-decoration: underline;
-        border-bottom: 2px solid #000;
+        border-bottom: 1px solid #000;
         padding-top: 10px;
         padding-bottom: 10px;
         margin-bottom: 15px;
@@ -221,25 +221,25 @@
         <!-- Student Name and DOB -->
         <tr>
           <td class="label-cell">Student Name:</td>
-          <td class="value-cell"></td>
+          <td class="value-cell">{{studentName}}</td>
           <td class="label-cell">Date of Birth:</td>
-          <td class="value-cell"></td>
+          <td class="value-cell">{{dob}}</td>
         </tr>
 
         <!-- Father Name and First Graduate -->
         <tr>
           <td class="label-cell">Father Name:</td>
-          <td class="value-cell"></td>
+          <td class="value-cell">{{fatherName}}</td>
           <td class="label-cell">1<sup>st</sup> Graduate:</td>
-          <td class="value-cell">Yes / No</td>
+          <td class="value-cell">{{isFirstGraduate}}</td>
         </tr>
 
         <!-- Mother Name and Gender -->
         <tr>
           <td class="label-cell">Mother Name:</td>
-          <td class="value-cell"></td>
+          <td class="value-cell">{{motherName}}</td>
           <td class="label-cell">Gender:</td>
-          <td class="value-cell">Male/Female</td>
+          <td class="value-cell">{{gender}}</td>
         </tr>
 
         <!-- Address -->
@@ -249,13 +249,13 @@
               >(with District and Pin code)</span
             >
           </td>
-          <td colspan="3" class="value-cell" style="height: 35px"></td>
-        </tr>
+          <td colspan="3" class="value-cell" style="height: 35px">{{addressCombined}}</td>
+
 
         <!-- Community -->
         <tr>
           <td class="label-cell">Community:</td>
-          <td colspan="3" class="value-cell"></td>
+          <td colspan="3" class="value-cell">{{community}}</td>
         </tr>
 
         <!-- Course Required -->
@@ -265,50 +265,50 @@
             colspan="3"
             class="course-options"
             style="background-color: white"
-          ></td>
+          >{{courseRequiredCombined}}</td>
         </tr>
 
         <!-- +2 School Name -->
         <tr>
           <td class="label-cell">+2 School Name:</td>
-          <td colspan="3" class="value-cell"></td>
+          <td colspan="3" class="value-cell">{{twelfthSchoolName}}</td>
         </tr>
 
         <!-- +2 School Address -->
         <tr>
           <td class="label-cell">+2 School Address:</td>
-          <td colspan="3" class="value-cell"></td>
+          <td colspan="3" class="value-cell">{{twelfthSchoolAddress}}</td>
         </tr>
 
         <!-- Boards and Register -->
         <table
           cellspacing="0"
           cellpadding="0"
-          style="border: none; width: 100%; text-align: left"
+          style=" width: 100%; text-align: left"
         >
           <tr>
             <td style="width: 22%; font-weight: bold">
               10<sup>th</sup> Board:
             </td>
-            <td style="width: 30%">TN-HSC / CBSE / ISC / Others</td>
+            <td style="width: 30%; background-color: white;">{{tenthSchoolBoard}}</td>
             <td style="width: 20%; font-weight: bold">
               12<sup>th</sup> Board:
             </td>
-            <td style="width: 30%">TN-HSC / CBSE / ISC / Others</td>
+            <td style="width: 30%; background-color: white;">{{twelfthSchoolBoard}}</td>
           </tr>
 
           <tr>
             <td style="font-weight: bold">10<sup>th</sup> Mark:</td>
-            <td>/ 500</td>
+            <td style="background-color: white;">{{tenthMarks}} / 500</td>
             <td style="font-weight: bold">+2 Register Number:</td>
-            <td></td>
+            <td style=" background-color: white;">{{twelfthRegisterNo}}</td>
           </tr>
 
           <!-- +2 Marks Secured Section -->
           <table
             cellspacing="0"
             cellpadding="4"
-            style="border: none; width: 100%; text-align: left; font-size: 10pt"
+            style=" width: 100%; text-align: left; font-size: 10pt"
           >
             <tr>
               <td
@@ -318,21 +318,21 @@
                 +2 Marks Secured
               </td>
               <td style="font-weight: bold; width: 15%">Maths</td>
-              <td style="width: 15%">/ 100</td>
+              <td style="width: 15%; background-color: white;">{{maths}} / 100</td>
               <td style="font-weight: bold">Chemistry</td>
-              <td style="width: 28%">/ 100</td>
+              <td style="width: 28%; background-color: white;">{{chemistry}} / 100</td>
             </tr>
             <tr>
               <td style="font-weight: bold">Physics</td>
-              <td>/ 100</td>
+              <td style=" background-color: white;">{{physics}} / 100</td>
               <td style="font-weight: bold">Vocational</td>
-              <td>/ 200</td>
+              <td style="background-color: white;">/ 200</td>
             </tr>
             <tr>
               <td style="font-weight: bold">Cut-Off</td>
-              <td>/ 200</td>
+              <td style="background-color: white;">{{cutOff}} / 200</td>
               <td style="font-weight: bold">Total Marks</td>
-              <td>/ 600</td>
+              <td style="background-color: white;">{{total}} / 600</td>
             </tr>
           </table>
         </table>
@@ -344,21 +344,21 @@
           <td colspan="4" class="mobile-header">Mobile Number:</td>
         </tr>
         <tr>
-          <td class="mobile-header" style="width: 25%">Student</td>
-          <td class="mobile-header" style="width: 25%">Father</td>
-          <td class="mobile-header" style="width: 25%">Mother</td>
+          <td class="mobile-header" style="width: 25%; background-color: white;">Student</td>
+          <td class="mobile-header" style="width: 25%; background-color: white;">Father</td>
+          <td class="mobile-header" style="width: 25%; background-color: white;">Mother</td>
         </tr>
-        <tr>
-          <td style="width: 25%">+91</td>
-          <td style="width: 25%">+91</td>
-          <td style="width: 25%">+91</td>
+        <tr style=" background-color: white;">
+          <td>{{studentMobile}}</td>
+                <td>{{fatherMobile}}</td>
+                <td>{{motherMobile}}</td>
         </tr>
       </table>
 
       <!-- Bottom Section -->
       <div class="bottom-row">
         <div class="date-section">
-          <strong>Date of Visit:</strong>
+          <strong>Date of Visit: {{dateOfVisit}}</strong>
         </div>
       </div>
 
@@ -371,6 +371,7 @@
         </div>
         <div class="admitted-dept">Admitted Department:</div>
       </div>
+      <div class="" style="text-align: center; padding-top: 10px; ; background-color: white;">Generated by SECE Admission Portal</div>
     </div>
   </body>
 </html>

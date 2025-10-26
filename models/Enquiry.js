@@ -73,7 +73,7 @@ const EnquirySchema = new mongoose.Schema(
     rejectRemark:{type:String},
     allocatedQuota: {
       type: String,
-      enum: ["Government Quota", "Management Quota"],
+      enum: ["Government Quota", "Management Quota",""],
     
     },
     revisited: { type: Boolean, default: false },

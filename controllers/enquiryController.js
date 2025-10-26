@@ -6,6 +6,30 @@ const fs = require("fs");
 const path = require("path");
 const PDFDocument = require("pdfkit");
 const renderPdf = require("../utils/pdfTemplates/enquiryPdf");
+const generateEnquiryPDF = require("../utils/generateEnquiryPDF");
+function preprocessEnquiryData(enquiry) {
+  const d = { ...enquiry };
+  d.addressCombined = d.address
+    ? [
+        d.address.doorNo, d.address.street, d.address.taluk,
+        d.address.district, d.address.state, d.address.pincode,
+      ].filter(Boolean).join(', ')
+    : '';
+  d.dob = d.dob ? new Date(d.dob).toLocaleDateString('en-IN') : '';
+  d.dateOfVisit = d.dateOfVisit ? new Date(d.dateOfVisit).toLocaleDateString('en-IN') : '';
+  d.courseRequiredCombined = Array.isArray(d.courseRequired)
+    ? d.courseRequired.filter(Boolean).join(', ')
+    : '';
+  const tm = d.twelfthMarks || {};
+  d.maths = tm.maths != null ? tm.maths : '';
+  d.physics = tm.physics != null ? tm.physics : '';
+  d.chemistry = tm.chemistry != null ? tm.chemistry : '';
+  d.vocationalIfAny = tm.vocationalIfAny != null ? tm.vocationalIfAny : '';
+  d.cutOff = tm.cutOff != null ? tm.cutOff : '';
+  d.total = tm.total != null ? tm.total : '';
+  d.isFirstGraduate = d.isFirstGraduate ? 'Yes' : 'No';
+  return d;
+}
 // Add new admission enquiry form
 exports.createEnquiry = async (req, res) => {
   try {
@@ -50,18 +74,20 @@ exports.createEnquiry = async (req, res) => {
     const fileName = `enquiry_${enquiry.studentName}.pdf`;
 
     const filePath = path.join(uploadsDir, fileName);
+  const data = preprocessEnquiryData(enquiry.toObject());
 
+    await generateEnquiryPDF(data, filePath);
     const publicPath = `/uploads/enquiries/${fileName}`;
-    const doc = new PDFDocument({ margin: 50 });
-    const writeStream = fs.createWriteStream(filePath);
+    // const doc = new PDFDocument({ margin: 50 });
+    // const writeStream = fs.createWriteStream(filePath);
 
-    doc.pipe(writeStream);
-    renderPdf(doc, { ...req.body, _id: enquiry.studentName }); // call the template
-    doc.end();
+    // doc.pipe(writeStream);
+    // renderPdf(doc, { ...req.body, _id: enquiry.studentName }); // call the template
+    // doc.end();
 
-    writeStream.on("finish", () => {
-      console.log(`Enquiry PDF saved: ${filePath}`);
-    });
+    // writeStream.on("finish", () => {
+    //   console.log(`Enquiry PDF saved: ${filePath}`);
+    // });
     enquiry.enquiryPdfUrl = publicPath;
     await enquiry.save();
 
@@ -395,19 +421,9 @@ exports.updateEnquiry = async (req, res) => {
       }
     }
 
-    // Generate new PDF
-    const doc = new PDFDocument({ margin: 50 });
-    const writeStream = fs.createWriteStream(filePath);
-
-    doc.pipe(writeStream);
-    renderPdf(doc, { ...updatedEnquiry.toObject(), _id: updatedEnquiry.studentName });
-    doc.end();
-
-    // Wait for PDF to finish writing
-    await new Promise((resolve, reject) => {
-      writeStream.on("finish", resolve);
-      writeStream.on("error", reject);
-    });
+    // 🔥 New: Generate new PDF using Puppeteer
+const pdfData = preprocessEnquiryData(updatedEnquiry.toObject());
+await generateEnquiryPDF(pdfData, filePath);
 
     // Update enquiry with new PDF URL
     updatedEnquiry.enquiryPdfUrl = publicPath;
