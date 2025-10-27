@@ -59,10 +59,11 @@
         position: absolute;
         right: 15px;
         top: 8px;
-        width: 80px;
-        height: 90px;
+        width: 150px;
+        height: 40px;
         border: 1px solid #000;
         background: white;
+        border-radius: 12px;
       }
 
       /* Table Layout */
@@ -206,6 +207,15 @@
         font-weight: bold;
         font-size: 12pt;
       }
+      .enquiryId {
+        border: 1px solid black;
+        width: 30%; 
+        border-radius: 10px; 
+        padding: 14px; 
+        display: flex;
+        justify-content: flex-end; 
+        margin-left: auto; 
+      }
     </style>
   </head>
   <body>
@@ -213,7 +223,10 @@
       <!-- Header -->
       <div class="header">
         <h1>Sri Eshwar College of Engineering, Coimbatore</h1>
-        <h2>Admission Enquiry Form (1<sup>st</sup> Year)</h2>
+        <div class="" style="display: flex; justify-content: space-between; align-items: center; ">
+          <h2 style="text-align: center; margin: auto; padding-left: 150px;">Admission Enquiry Form (1<sup>st</sup> Year)</h2>
+        <h2 style="font-weight: bold;">EnquiryId : {{enquiryId}}</h2>
+        </div>
       </div>
 
       <!-- Main Form Table -->
@@ -231,7 +244,9 @@
           <td class="label-cell">Father Name:</td>
           <td class="value-cell">{{fatherName}}</td>
           <td class="label-cell">1<sup>st</sup> Graduate:</td>
-          <td class="value-cell">{{isFirstGraduate}}</td>
+          <td class="value-cell" style="font-weight: bold">
+            {{isFirstGraduate}}
+          </td>
         </tr>
 
         <!-- Mother Name and Gender -->
@@ -249,13 +264,18 @@
               >(with District and Pin code)</span
             >
           </td>
-          <td colspan="3" class="value-cell" style="height: 35px">{{addressCombined}}</td>
+          <td colspan="3" class="value-cell" style="height: 35px">
+            {{addressCombined}}
+          </td>
 
+          <!-- Community -->
+        </tr>
 
-        <!-- Community -->
         <tr>
           <td class="label-cell">Community:</td>
-          <td colspan="3" class="value-cell">{{community}}</td>
+          <td colspan="3" class="value-cell" style="font-weight: bold">
+            {{community}}
+          </td>
         </tr>
 
         <!-- Course Required -->
@@ -265,7 +285,9 @@
             colspan="3"
             class="course-options"
             style="background-color: white"
-          >{{courseRequiredCombined}}</td>
+          >
+            {{courseRequiredCombined}}
+          </td>
         </tr>
 
         <!-- +2 School Name -->
@@ -284,31 +306,37 @@
         <table
           cellspacing="0"
           cellpadding="0"
-          style=" width: 100%; text-align: left"
+          style="width: 100%; text-align: left"
         >
           <tr>
             <td style="width: 22%; font-weight: bold">
               10<sup>th</sup> Board:
             </td>
-            <td style="width: 30%; background-color: white;">{{tenthSchoolBoard}}</td>
+            <td style="width: 30%; background-color: white">
+              {{tenthSchoolBoard}}
+            </td>
             <td style="width: 20%; font-weight: bold">
               12<sup>th</sup> Board:
             </td>
-            <td style="width: 30%; background-color: white;">{{twelfthSchoolBoard}}</td>
+            <td style="width: 30%; background-color: white">
+              {{twelfthSchoolBoard}}
+            </td>
           </tr>
 
           <tr>
             <td style="font-weight: bold">10<sup>th</sup> Mark:</td>
-            <td style="background-color: white;">{{tenthMarks}} / 500</td>
+            <td style="background-color: white; font-weight: bold">
+              {{tenthMarks}} / 500
+            </td>
             <td style="font-weight: bold">+2 Register Number:</td>
-            <td style=" background-color: white;">{{twelfthRegisterNo}}</td>
+            <td style="background-color: white">{{twelfthRegisterNo}}</td>
           </tr>
 
           <!-- +2 Marks Secured Section -->
           <table
             cellspacing="0"
             cellpadding="4"
-            style=" width: 100%; text-align: left; font-size: 10pt"
+            style="width: 100%; text-align: left; font-size: 10pt"
           >
             <tr>
               <td
@@ -318,21 +346,27 @@
                 +2 Marks Secured
               </td>
               <td style="font-weight: bold; width: 15%">Maths</td>
-              <td style="width: 15%; background-color: white;">{{maths}} / 100</td>
+              <td style="width: 15%; background-color: white">
+                {{maths}} / 100
+              </td>
               <td style="font-weight: bold">Chemistry</td>
-              <td style="width: 28%; background-color: white;">{{chemistry}} / 100</td>
+              <td style="width: 28%; background-color: white">
+                {{chemistry}} / 100
+              </td>
             </tr>
             <tr>
               <td style="font-weight: bold">Physics</td>
-              <td style=" background-color: white;">{{physics}} / 100</td>
+              <td style="background-color: white">{{physics}} / 100</td>
               <td style="font-weight: bold">Vocational</td>
-              <td style="background-color: white;">/ 200</td>
+              <td style="background-color: white">/ 200</td>
             </tr>
             <tr>
               <td style="font-weight: bold">Cut-Off</td>
-              <td style="background-color: white;">{{cutOff}} / 200</td>
+              <td style="background-color: white; font-weight: bold">
+                {{cutOff}} / 200
+              </td>
               <td style="font-weight: bold">Total Marks</td>
-              <td style="background-color: white;">{{total}} / 600</td>
+              <td style="background-color: white">{{total}} / 600</td>
             </tr>
           </table>
         </table>
@@ -344,14 +378,20 @@
           <td colspan="4" class="mobile-header">Mobile Number:</td>
         </tr>
         <tr>
-          <td class="mobile-header" style="width: 25%; background-color: white;">Student</td>
-          <td class="mobile-header" style="width: 25%; background-color: white;">Father</td>
-          <td class="mobile-header" style="width: 25%; background-color: white;">Mother</td>
+          <td class="mobile-header" style="width: 25%; background-color: white">
+            Student
+          </td>
+          <td class="mobile-header" style="width: 25%; background-color: white">
+            Father
+          </td>
+          <td class="mobile-header" style="width: 25%; background-color: white">
+            Mother
+          </td>
         </tr>
-        <tr style=" background-color: white;">
+        <tr style="background-color: white">
           <td>{{studentMobile}}</td>
-                <td>{{fatherMobile}}</td>
-                <td>{{motherMobile}}</td>
+          <td>{{fatherMobile}}</td>
+          <td>{{motherMobile}}</td>
         </tr>
       </table>
 
@@ -371,7 +411,12 @@
         </div>
         <div class="admitted-dept">Admitted Department:</div>
       </div>
-      <div class="" style="text-align: center; padding-top: 10px; ; background-color: white;">Generated by SECE Admission Portal</div>
+        <div
+          class=""
+          style="text-align: center; padding-top: 10px; background-color: white"
+        >
+          Generated by SECE Admission Portal
+        </div>
     </div>
   </body>
 </html>
