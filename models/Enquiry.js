@@ -95,16 +95,16 @@ const EnquirySchema = new mongoose.Schema(
 
 EnquirySchema.pre("save", async function (next) {
   if (this.isNew) {
-    const prefix = "sece";
+    // const prefix = "sece";
     const year1 = new Date().getFullYear() % 100;
     const year2 = (new Date().getFullYear() + 1) % 100;
     const yearString = `${year1}${year2}`;
-    const fixedPart = "eq";
+    const fixedPart = "ENQ";
 
     const seqNumber = await getNextSequence("enquiry");
     const seqString = seqNumber.toString().padStart(4, "0");
 
-    this.enquiryId = `${prefix}${yearString}${fixedPart}${seqString}`;
+    this.enquiryId = `${yearString}${fixedPart}${seqString}`;
   }
   next();
 });
