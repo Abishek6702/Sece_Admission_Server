@@ -7,27 +7,37 @@ const path = require("path");
 const PDFDocument = require("pdfkit");
 const renderPdf = require("../utils/pdfTemplates/enquiryPdf");
 const generateEnquiryPDF = require("../utils/generateEnquiryPDF");
+const puppeteer = require("puppeteer");
+
 function preprocessEnquiryData(enquiry) {
   const d = { ...enquiry };
   d.addressCombined = d.address
     ? [
-        d.address.doorNo, d.address.street, d.address.taluk,
-        d.address.district, d.address.state, d.address.pincode,
-      ].filter(Boolean).join(', ')
-    : '';
-  d.dob = d.dob ? new Date(d.dob).toLocaleDateString('en-IN') : '';
-  d.dateOfVisit = d.dateOfVisit ? new Date(d.dateOfVisit).toLocaleDateString('en-IN') : '';
+        d.address.doorNo,
+        d.address.street,
+        d.address.taluk,
+        d.address.district,
+        d.address.state,
+        d.address.pincode,
+      ]
+        .filter(Boolean)
+        .join(", ")
+    : "";
+  d.dob = d.dob ? new Date(d.dob).toLocaleDateString("en-IN") : "";
+  d.dateOfVisit = d.dateOfVisit
+    ? new Date(d.dateOfVisit).toLocaleDateString("en-IN")
+    : "";
   d.courseRequiredCombined = Array.isArray(d.courseRequired)
-    ? d.courseRequired.filter(Boolean).join(', ')
-    : '';
+    ? d.courseRequired.filter(Boolean).join(", ")
+    : "";
   const tm = d.twelfthMarks || {};
-  d.maths = tm.maths != null ? tm.maths : '';
-  d.physics = tm.physics != null ? tm.physics : '';
-  d.chemistry = tm.chemistry != null ? tm.chemistry : '';
-  d.vocationalIfAny = tm.vocationalIfAny != null ? tm.vocationalIfAny : '';
-  d.cutOff = tm.cutOff != null ? tm.cutOff : '';
-  d.total = tm.total != null ? tm.total : '';
-  d.isFirstGraduate = d.isFirstGraduate ? 'Yes' : 'No';
+  d.maths = tm.maths != null ? tm.maths : "";
+  d.physics = tm.physics != null ? tm.physics : "";
+  d.chemistry = tm.chemistry != null ? tm.chemistry : "";
+  d.vocationalIfAny = tm.vocationalIfAny != null ? tm.vocationalIfAny : "";
+  d.cutOff = tm.cutOff != null ? tm.cutOff : "";
+  d.total = tm.total != null ? tm.total : "";
+  d.isFirstGraduate = d.isFirstGraduate ? "Yes" : "No";
   return d;
 }
 // Add new admission enquiry form
@@ -74,7 +84,7 @@ exports.createEnquiry = async (req, res) => {
     const fileName = `enquiry_${enquiry.studentName}.pdf`;
 
     const filePath = path.join(uploadsDir, fileName);
-  const data = preprocessEnquiryData(enquiry.toObject());
+    const data = preprocessEnquiryData(enquiry.toObject());
 
     await generateEnquiryPDF(data, filePath);
     const publicPath = `/uploads/enquiries/${fileName}`;
@@ -165,9 +175,8 @@ exports.updateEnquiryStatus = async (req, res) => {
     if (scholarshipType !== undefined) update.scholarshipType = scholarshipType;
     if (transactionNo !== undefined) update.transactionNo = transactionNo;
     if (finalizedCourse !== undefined) update.finalizedCourse = finalizedCourse;
-    if(allocatedQuota!== undefined) update.allocatedQuota=allocatedQuota;
-    if(rejectRemark!== undefined) update.rejectRemark=rejectRemark;
-
+    if (allocatedQuota !== undefined) update.allocatedQuota = allocatedQuota;
+    if (rejectRemark !== undefined) update.rejectRemark = rejectRemark;
 
     const enquiry = await Enquiry.findByIdAndUpdate(req.params.id, update, {
       new: true,
@@ -368,11 +377,11 @@ exports.updateEnquiry = async (req, res) => {
 
     // Fields to exclude from update
     const excludeFields = [
-      '_id',
-      '__v',
-      'createdAt',
-      'updatedAt',
-      'enquiryPdfUrl'
+      "_id",
+      "__v",
+      "createdAt",
+      "updatedAt",
+      "enquiryPdfUrl",
     ];
 
     // Copy all fields except excluded ones
@@ -385,11 +394,10 @@ exports.updateEnquiry = async (req, res) => {
     console.log("Update data for enquiry:", updateData);
 
     // 3️⃣ Update enquiry
-    const updatedEnquiry = await Enquiry.findByIdAndUpdate(
-      id,
-      updateData,
-      { new: true, runValidators: true }
-    );
+    const updatedEnquiry = await Enquiry.findByIdAndUpdate(id, updateData, {
+      new: true,
+      runValidators: true,
+    });
 
     if (!updatedEnquiry) {
       return res.status(404).json({
@@ -422,16 +430,14 @@ exports.updateEnquiry = async (req, res) => {
     }
 
     // 🔥 New: Generate new PDF using Puppeteer
-const pdfData = preprocessEnquiryData(updatedEnquiry.toObject());
-await generateEnquiryPDF(pdfData, filePath);
+    const pdfData = preprocessEnquiryData(updatedEnquiry.toObject());
+    await generateEnquiryPDF(pdfData, filePath);
 
     // Update enquiry with new PDF URL
     updatedEnquiry.enquiryPdfUrl = publicPath;
     await updatedEnquiry.save();
 
     console.log(`✅ New enquiry PDF saved: ${filePath}`);
-
-   
 
     res.status(200).json({
       success: true,
@@ -446,6 +452,320 @@ await generateEnquiryPDF(pdfData, filePath);
       message: "Error updating enquiry",
       error: error.message,
     });
+  }
+};
+
+function buildQuery({
+  categoryFilter,
+  graduateFilter,
+  statusFilter,
+  cutOffFilter,
+  dateFilter,
+  search,
+}) {
+  const q = {};
+  if (categoryFilter) q.community = categoryFilter;
+  if (graduateFilter) q.isFirstGraduate = graduateFilter === "Yes";
+  if (statusFilter) q.status = statusFilter;
+  if (cutOffFilter) {
+    if (cutOffFilter.from !== "")
+      q["twelfthMarks.cutOff"] = {
+        ...q["twelfthMarks.cutOff"],
+        $gte: Number(cutOffFilter.from),
+      };
+    if (cutOffFilter.to !== "")
+      q["twelfthMarks.cutOff"] = {
+        ...q["twelfthMarks.cutOff"],
+        $lte: Number(cutOffFilter.to),
+      };
+  }
+  if (dateFilter) {
+    if (dateFilter.from)
+      q.dateOfVisit = { ...q.dateOfVisit, $gte: new Date(dateFilter.from) };
+    if (dateFilter.to)
+      q.dateOfVisit = { ...q.dateOfVisit, $lte: new Date(dateFilter.to) };
+  }
+  if (search) q.studentName = { $regex: search, $options: "i" };
+  return q;
+}
+
+exports.pdfGenerate = async (req, res) => {
+  try {
+    const filters = req.body || {};
+   let enquiries;
+    // If selectedIds is present, use ONLY those for export
+    if (filters.selectedIds && Array.isArray(filters.selectedIds) && filters.selectedIds.length > 0) {
+      enquiries = await Enquiry.find({ _id: { $in: filters.selectedIds } })
+        .select("enquiryId studentName community isFirstGraduate twelfthMarks dateOfVisit status");
+    } else {
+      // Otherwise, use filters as before
+      const query = buildQuery(filters);
+      enquiries = await Enquiry.find(query)
+        .select("enquiryId studentName community isFirstGraduate twelfthMarks dateOfVisit status");
+    }
+    // Build HTML table, matching your UI minus Action column
+    const tableRows = enquiries
+      .map(
+        (enq) => `
+      <tr>
+        <td>${enq.enquiryId}</td>
+        <td>${enq.studentName}</td>
+        <td>${enq.community}</td>
+        <td>${enq.isFirstGraduate ? "Yes" : "No"}</td>
+        <td>${enq.twelfthMarks?.cutOff || ""}</td>
+        <td>${
+          enq.dateOfVisit
+            ? new Date(enq.dateOfVisit).toISOString().split("T")[0]
+            : ""
+        }</td>
+        <td>${enq.status}</td>
+      </tr>
+    `
+      )
+      .join("");
+
+    // Full HTML document
+   const html = `
+<html>
+  <head>
+    <style>
+      @media print {
+        body {
+          width: 210mm;
+          height: 297mm;
+          margin: 0;
+          padding: 0;
+        }
+      }
+      body {
+        font-family: 'Times New Roman', Times, serif;
+        font-size: 12px;
+        margin: 30px 20px;
+        background: #fff;
+      }
+      h2 {
+        color: #0b56a4;
+        text-align: center;
+        font-size: 2rem;
+        margin-bottom: 16px;
+        font-family: 'Times New Roman', Times, serif;
+      }
+      table {
+        width: 95%;
+        margin:auto;
+        max-width: 95%;
+        border-collapse: collapse;
+        table-layout: fixed;
+      }
+      th, td {
+        border: 1px solid #d1d5db;
+        padding: 10px 6px;
+        text-align: left;
+        font-size: 12px;
+        font-family: 'Times New Roman', Times, serif;
+        word-break: break-word;
+      }
+      th {
+        background: #0b56a4;
+        color: #fff;
+        font-weight: bold;
+        font-size: 13px;
+        font-family: 'Times New Roman', Times, serif;
+      }
+      /* Ensure column widths are consistent and status doesn't wrap badly */
+      th, td {
+        width: 14.29%;
+      }
+      tr:nth-child(even) {
+        background: #f6f8fa;
+      }
+      tr:nth-child(odd) {
+        background: #fff;
+      }
+    </style>
+  </head>
+  <body>
+    <h2>Enquiry List</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Enquiry ID</th>
+          <th>Name</th>
+          <th>Community</th>
+          <th>First Graduate</th>
+          <th>Cutoff</th>
+          <th>Date of Visit</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- TABLE ROWS INSERTED HERE -->
+        ${tableRows}
+      </tbody>
+    </table>
+  </body>
+</html>
+
+`;
+
+
+    // Render HTML as PDF via Puppeteer
+    const browser = await puppeteer.launch({ headless: "new" });
+    const page = await browser.newPage();
+    await page.setContent(html, { waitUntil: "networkidle0" });
+    const pdfBuffer = await page.pdf({ format: "A4", printBackground: true });
+    await browser.close();
+
+    // Send PDF for download
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader(
+      "Content-Disposition",
+      'attachment; filename="enquiries.pdf"'
+    );
+    res.send(pdfBuffer);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to generate PDF" });
+  }
+};
+
+exports.ScholarPdfGenerate = async (req, res) => {
+  try {
+    const filters = req.body || {};
+   let enquiries;
+    // If selectedIds is present, use ONLY those for export
+    if (filters.selectedIds && Array.isArray(filters.selectedIds) && filters.selectedIds.length > 0) {
+      enquiries = await Enquiry.find({ _id: { $in: filters.selectedIds } })
+        .select("enquiryId studentName community feesPaid allocatedStaff dateOfVisit status");
+    } else {
+      // Otherwise, use filters as before
+      const query = buildQuery(filters);
+      enquiries = await Enquiry.find(query)
+        .select("enquiryId studentName community feesPaid allocatedStaff dateOfVisit status");
+    }
+    // Build HTML table, matching your UI minus Action column
+    const tableRows = enquiries
+      .map(
+        (enq) => `
+      <tr>
+        <td>${enq.enquiryId}</td>
+        <td>${enq.studentName}</td>
+        <td>${enq.community}</td>
+        <td>${enq.feesPaid ? "Yes" : "No"}</td>
+        <td>${enq.allocatedStaff}</td>
+        <td>${
+          enq.dateOfVisit
+            ? new Date(enq.dateOfVisit).toISOString().split("T")[0]
+            : ""
+        }</td>
+        <td>${enq.status}</td>
+      </tr>
+    `
+      )
+      .join("");
+
+    // Full HTML document
+   const html = `
+<html>
+  <head>
+    <style>
+      @media print {
+        body {
+          width: 210mm;
+          height: 297mm;
+          margin: 0;
+          padding: 0;
+        }
+      }
+      body {
+        font-family: 'Times New Roman', Times, serif;
+        font-size: 12px;
+        margin: 30px 20px;
+        background: #fff;
+      }
+      h2 {
+        color: #0b56a4;
+        text-align: center;
+        font-size: 2rem;
+        margin-bottom: 16px;
+        font-family: 'Times New Roman', Times, serif;
+      }
+      table {
+        width: 95%;
+        margin:auto;
+        max-width: 95%;
+        border-collapse: collapse;
+        table-layout: fixed;
+      }
+      th, td {
+        border: 1px solid #d1d5db;
+        padding: 10px 6px;
+        text-align: left;
+        font-size: 12px;
+        font-family: 'Times New Roman', Times, serif;
+        word-break: break-word;
+      }
+      th {
+        background: #0b56a4;
+        color: #fff;
+        font-weight: bold;
+        font-size: 13px;
+        font-family: 'Times New Roman', Times, serif;
+      }
+      /* Ensure column widths are consistent and status doesn't wrap badly */
+      th, td {
+        width: 14.29%;
+      }
+      tr:nth-child(even) {
+        background: #f6f8fa;
+      }
+      tr:nth-child(odd) {
+        background: #fff;
+      }
+    </style>
+  </head>
+  <body>
+    <h2>Enquiry List</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Enquiry ID</th>
+          <th>Name</th>
+          <th>Community</th>
+          <th>Fees Paid</th>
+          <th>Allocated Staff</th>
+          <th>Date of Visit</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- TABLE ROWS INSERTED HERE -->
+        ${tableRows}
+      </tbody>
+    </table>
+  </body>
+</html>
+
+`;
+
+
+    // Render HTML as PDF via Puppeteer
+    const browser = await puppeteer.launch({ headless: "new" });
+    const page = await browser.newPage();
+    await page.setContent(html, { waitUntil: "networkidle0" });
+    const pdfBuffer = await page.pdf({ format: "A4", printBackground: true });
+    await browser.close();
+
+    // Send PDF for download
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader(
+      "Content-Disposition",
+      'attachment; filename="enquiries.pdf"'
+    );
+    res.send(pdfBuffer);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to generate PDF" });
   }
 };
 

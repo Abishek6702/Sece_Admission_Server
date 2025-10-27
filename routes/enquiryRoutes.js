@@ -21,6 +21,10 @@ router.post("/:id/revisit", enquiryController.addRevisit);
 router.get("/revisited/count", enquiryController.getRevisitedCount);
 router.get("/scholarship/count", enquiryController.getScholarshipCount);
 router.put("/:id", enquiryController.updateEnquiry);
+router.post("/pdf", enquiryController.pdfGenerate);
+router.post("/scholarpdf", enquiryController.ScholarPdfGenerate);
+
+
 
 
 
