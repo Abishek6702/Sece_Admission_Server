@@ -1,6 +1,10 @@
 const mongoose = require("mongoose");
 const bcrypt = require("bcryptjs");
 const crypto = require("crypto");
+const XLSX = require('xlsx');
+// const bcrypt = require('bcrypt');
+const multer = require('multer');
+const upload = multer({ dest: 'uploads/' });
 const User = require("../models/User");
 const Enquiry = require("../models/Enquiry");
 
@@ -253,5 +257,133 @@ exports.createStaff = async (req, res) => {
     res.status(201).json({ message: "Staff user created", staff });
   } catch (err) {
     res.status(500).json({ message: "Error creating staff user", err });
+  }
+};
+
+
+exports.importUsersFromExcel = [
+  upload.single('excel'), // Accepts field "excel" in form-data
+  async (req, res) => {
+    try {
+      const workbook = XLSX.readFile(req.file.path);
+      const sheet = workbook.Sheets[workbook.SheetNames[0]];
+      const userRows = XLSX.utils.sheet_to_json(sheet);
+
+      let createdUsers = [];
+
+      for (const row of userRows) {
+        // Check if user already exists
+        const existing = await User.findOne({ email: row.email });
+        if (existing) continue;
+
+        let dobValue = row.dob;
+        let day = "";
+        let month = "";
+        
+        // If dob is a Date object
+        if (dobValue instanceof Date) {
+          day = String(dobValue.getDate()).padStart(2, "0");
+          month = String(dobValue.getMonth() + 1).padStart(2, "0");
+        } else if (typeof dobValue === "string") {
+          // Accepts dd-mm-yyyy, dd/mm/yyyy or similar
+          let del = dobValue.includes('-') ? '-' : (dobValue.includes('/') ? '/' : '');
+          if (del) {
+            [day, month] = dobValue.split(del);
+          } else {
+            day = dobValue.substring(0,2);
+            month = dobValue.substring(3,5);
+          }
+        } else if (typeof dobValue === "number") {
+          // Excel date serial to JS Date object
+          const excelEpoch = new Date((dobValue - (25567 + 2)) * 86400 * 1000);
+          day = String(excelEpoch.getDate()).padStart(2, "0");
+          month = String(excelEpoch.getMonth() + 1).padStart(2, "0");
+        } else {
+          // fallback
+          day = "01";
+          month = "01";
+        }
+        
+        const passwordPlain = `Sece${day}${month}`;
+        
+        const hashedPassword = await bcrypt.hash(passwordPlain, 10);
+
+        // Create user object with prefill fields
+        const user = new User({
+          name: row.name,
+          email: row.email,
+          password: hashedPassword,
+          role: "Student",
+          firstTimeLogin: true,
+          prefillData: {
+            dob: row.dob,
+            courseEntryType: row.courseEntryType,
+            quota: row.quota,
+            finalizedCourse: row.finalizedCourse,
+          },
+        });
+
+        await user.save();
+        const BASE_URL = process.env.BASE_URL || "";
+        const FRONTEND_URL = process.env.FRONTEND_URL || "";
+        // Send welcome email
+        const html = renderTemplate("welcome", {
+          studentName: row.name,
+          email: row.email,
+          password: passwordPlain,
+          baseUrl: BASE_URL,
+          frontendUrl: FRONTEND_URL,
+          // use your BASE_URL and FRONTEND_URL as before
+        });
+        await sendMail(row.email, "Your College Admission Portal Login", html);
+
+        createdUsers.push(user);
+      }
+
+      res.status(201).json({
+        message: "Users created from Excel",
+        count: createdUsers.length,
+        createdUsers,
+      });
+    } catch (error) {
+      console.error("Excel import error:", error);
+      res.status(500).json({ message: "Import failed", error });
+    }
+  }
+];
+
+exports.getUserById = async (req, res) => {
+  try {
+    const userId = req.params.id; // get ID from request params
+
+    const user = await User.findById(userId).select('-password'); // exclude password field for security
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    res.json(user);
+  } catch (error) {
+    console.error("Error getting user by ID:", error);
+    res.status(500).json({ message: 'Server error', error });
+  }
+};
+
+exports.getUsersList = async (req, res) => {
+  try {
+    const users = await User.find({
+      $or: [
+        { "prefillData.quota": { $exists: true, $ne: "" } },
+        { "prefillData.finalizedCourse": { $exists: true, $ne: "" } },
+        { "prefillData.courseEntryType": { $exists: true, $ne: "" } }
+      ]
+    })
+      .select('name email prefillData.quota prefillData.finalizedCourse prefillData.courseEntryType')
+      .lean();
+
+    res.json(users);
+  } catch (error) {
+    console.error("Failed to fetch users list:", error);
+    res.status(500).json({ message: "Failed to fetch users" });
   }
 };

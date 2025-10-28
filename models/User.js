@@ -18,6 +18,13 @@ const UserSchema = new mongoose.Schema(
     },
     resetOtp: { type: String },
     resetOtpExpiry: { type: Date },
+    prefillData: {
+      quota: String,
+      finalizedCourse: String,
+      courseEntryType: String,
+      dod:Date,
+      
+    },
   },
   { timestamps: true }
 );

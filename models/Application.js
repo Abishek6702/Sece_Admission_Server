@@ -136,6 +136,7 @@ const ApplicationSchema = new mongoose.Schema(
       default: {},
     },
     lastUpdatedFields: [String],
+    
   },
   { timestamps: true }
 );

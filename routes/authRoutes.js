@@ -6,7 +6,10 @@ const {
   forgotPassword,
   resetPassword,
   changePassword,
-  createStaff
+  createStaff,
+  importUsersFromExcel,
+  getUserById,
+  getUsersList
 } = require("../controllers/authController");
 const { protect, adminOnly } = require("../middlewares/authMiddleware");
 
@@ -26,6 +29,10 @@ router.post("/forgot-password", forgotPassword);
 router.post("/reset-password", resetPassword);
 router.post("/change-password", changePassword);
 router.post("/create-staff", createStaff);
+router.post("/import-users-excel",importUsersFromExcel );
+router.get('/users', getUsersList);
+router.get('/:id', getUserById);
+
 
 
 module.exports = router;
