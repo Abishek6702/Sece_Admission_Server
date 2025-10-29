@@ -7,6 +7,7 @@ const authRoutes = require("./routes/authRoutes");
 const applicationRoutes = require("./routes/applicationRoutes");
 const schoolRoutes = require("./routes/schoolRoutes.js");
 const staffRoutes = require("./routes/staffRoutes.js");
+const dashboardRoutes = require("./routes/dashbaordRoutes.js");
 
 const fs = require("fs");
 const path = require("path");
@@ -46,6 +47,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/application", applicationRoutes);
 app.use("/api/school",schoolRoutes);
 app.use("/api/staff",staffRoutes);
+app.use("/api/dashboard", dashboardRoutes);
 
 const PORT = process.env.PORT;
 
