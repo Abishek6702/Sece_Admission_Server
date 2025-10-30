@@ -18,6 +18,7 @@ const app = express();
 const allowedOrigins = [
   "http://localhost:5173",
   "https://your-frontend-domain.com",
+  "https://sece-admission-client.vercel.app",
   "http://10.57.1.69:5173",
 ];
 
